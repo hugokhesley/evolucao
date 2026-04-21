@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Minha Evolução</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;}
+  .app{max-width:430px;margin:0 auto;padding:1rem;padding-bottom:5rem;}
+  .header{margin-bottom:1.25rem;}
+  .header h1{font-size:22px;font-weight:600;color:#1a1a1a;}
+  .header p{font-size:13px;color:#888;margin-top:2px;}
+  .tabs{display:flex;gap:4px;margin-bottom:1rem;background:#e8e8e2;padding:4px;border-radius:12px;}
+  .tab{flex:1;padding:8px 4px;border:none;border-radius:9px;background:transparent;font-size:12px;cursor:pointer;color:#666;transition:all 0.15s;font-weight:500;}
+  .tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+  .card{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+  .section-title{font-size:11px;font-weight:600;color:#999;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em;}
+  .metric-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+  .metric{background:#f5f5f0;border-radius:12px;padding:10px 12px;text-align:center;}
+  .metric .val{font-size:20px;font-weight:600;color:#1a1a1a;}
+  .metric .val.green{color:#1D9E75;}
+  .metric .val.red{color:#D85A30;}
+  .metric .lbl{font-size:11px;color:#999;margin-top:2px;}
+  .cam-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border:1.5px dashed #ddd;border-radius:12px;background:transparent;font-size:14px;color:#666;cursor:pointer;transition:all 0.15s;margin-bottom:10px;}
+  .cam-btn:hover{background:#f9f9f7;border-color:#bbb;}
+  .cam-btn:active{transform:scale(0.98);}
+  .cam-icon{font-size:20px;}
+  input[type=file]{display:none;}
+  .preview-wrap{display:none;position:relative;margin-bottom:10px;}
+  .preview-wrap img{width:100%;border-radius:12px;max-height:240px;object-fit:cover;}
+  .preview-del{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .weight-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .weight-row label{font-size:14px;color:#1a1a1a;white-space:nowrap;font-weight:500;}
+  .weight-row input{flex:1;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:16px;outline:none;transition:border 0.15s;}
+  .weight-row input:focus{border-color:#378ADD;}
+  .weight-row span{font-size:14px;color:#888;}
+  .btn{display:block;width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:12px;background:#fff;color:#1a1a1a;font-size:14px;cursor:pointer;margin-top:8px;transition:all 0.15s;text-align:center;font-weight:500;}
+  .btn:hover{background:#f5f5f0;}
+  .btn:active{transform:scale(0.98);}
+  .btn.primary{background:#1a1a1a;border-color:#1a1a1a;color:#fff;font-weight:600;font-size:15px;padding:14px;}
+  .btn.primary:hover{background:#333;}
+  .btn.strava{background:#fc4c02;border-color:#fc4c02;color:#fff;font-weight:600;}
+  .btn.strava:hover{background:#e04400;}
+  .btn.danger{color:#D85A30;border-color:#D85A30;}
+  .btn.danger:hover{background:#fff5f2;}
+  .btn.sm{padding:7px 14px;width:auto;display:inline-block;font-size:13px;}
+  .timeline{display:flex;flex-direction:column;gap:12px;}
+  .entry-card{background:#f9f9f7;border-radius:14px;padding:12px 14px;border:1px solid #ebebeb;}
+  .entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .entry-date{font-size:14px;font-weight:600;color:#1a1a1a;}
+  .entry-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:0 2px;transition:color 0.15s;}
+  .entry-del:hover{color:#D85A30;}
+  .entry-photos{display:flex;gap:6px;margin-bottom:8px;}
+  .entry-photos img{flex:1;min-width:0;border-radius:10px;object-fit:cover;height:100px;cursor:pointer;transition:opacity 0.15s;}
+  .entry-photos img:hover{opacity:0.85;}
+  .entry-weight{font-size:13px;color:#666;margin-top:4px;}
+  .entry-strava{font-size:12px;color:#fc4c02;margin-top:4px;font-weight:500;}
+  .empty{text-align:center;padding:2.5rem 1rem;color:#aaa;font-size:14px;line-height:1.6;}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .compare-col{text-align:center;}
+  .compare-col img{width:100%;border-radius:12px;object-fit:cover;height:180px;cursor:pointer;}
+  .compare-col .no-foto{height:180px;background:#f0f0ec;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#bbb;}
+  .compare-col p{font-size:12px;color:#888;margin-top:6px;font-weight:500;}
+  .compare-selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .compare-selects select{padding:10px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;outline:none;}
+  .strava-status{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .dot.green{background:#1D9E75;}
+  .dot.gray{background:#ccc;}
+  .badge{font-size:11px;padding:3px 9px;border-radius:99px;background:#e8f5ef;color:#1D9E75;font-weight:600;}
+  .notif-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0ec;}
+  .notif-row:last-child{border-bottom:none;}
+  .notif-row label{font-size:14px;color:#1a1a1a;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:11px 22px;border-radius:99px;font-size:13px;display:none;z-index:999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;}
+  .modal-bg.open{display:flex;}
+  .modal-img{max-width:96vw;max-height:92vh;border-radius:12px;object-fit:contain;}
+  .close-modal{position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .dif-positivo{color:#1D9E75;font-weight:600;}
+  .dif-negativo{color:#D85A30;font-weight:600;}
+  .peso-grafico{margin-top:8px;}
+  .peso-grafico canvas{width:100%;height:120px;}
+  select{padding:10px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;width:100%;}
+  input[type=number]{-moz-appearance:textfield;}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Minha evolução</h1>
+    <p id="todayLabel"></p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('registrar')">Hoje</button>
+    <button class="tab" onclick="showTab('timeline')">Histórico</button>
+    <button class="tab" onclick="showTab('comparar')">Comparar</button>
+    <button class="tab" onclick="showTab('config')">Config</button>
+  </div>
+
+  <!-- TAB REGISTRAR -->
+  <div id="tab-registrar">
+    <div class="card">
+      <div class="section-title">Fotos de hoje</div>
+      <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
+        <span class="cam-icon">🤳</span>
+        <span>Foto do rosto (câmera frontal)</span>
+      </button>
+      <input type="file" id="fotoRosto" accept="image/*" capture="user" onchange="loadPreview(this,'prevRosto','wrapRosto')">
+      <div class="preview-wrap" id="wrapRosto">
+        <img id="prevRosto" alt="rosto">
+        <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
+      </div>
+
+      <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
+        <span class="cam-icon">📷</span>
+        <span>Foto do corpo (câmera traseira)</span>
+      </button>
+      <input type="file" id="fotoCorpo" accept="image/*" capture="environment" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
+      <div class="preview-wrap" id="wrapCorpo">
+        <img id="prevCorpo" alt="corpo">
+        <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Peso</div>
+      <div class="weight-row">
+        <label>Peso hoje</label>
+        <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5">
+        <span>kg</span>
+      </div>
+      <div id="ultimoPesoInfo" style="font-size:13px;color:#aaa;margin-top:-4px;"></div>
+    </div>
+
+    <div class="card" id="stravaCard">
+      <div class="section-title">Strava — atividade de hoje</div>
+      <div id="stravaOff">
+        <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
+        <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
+      </div>
+      <div id="stravaOn" style="display:none">
+        <div class="strava-status">
+          <span class="dot green"></span>
+          <span style="font-size:14px;font-weight:600;">Strava conectado</span>
+          <span class="badge">ativo</span>
+        </div>
+        <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
+        <button class="btn sm" onclick="syncStrava()">Atualizar</button>
+      </div>
+    </div>
+
+    <button class="btn primary" onclick="salvarDia()">Salvar registro de hoje</button>
+  </div>
+
+  <!-- TAB TIMELINE -->
+  <div id="tab-timeline" style="display:none">
+    <div class="card" id="resumoCard" style="display:none">
+      <div class="section-title">Resumo geral</div>
+      <div class="metric-row" id="resumoMetrics"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Histórico de dias</div>
+      <div class="timeline" id="timelineList">
+        <div class="empty">Nenhum registro ainda.<br>Comece registrando hoje! 💪</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB COMPARAR -->
+  <div id="tab-comparar" style="display:none">
+    <div class="card">
+      <div class="section-title">Comparar dois dias</div>
+      <div class="compare-selects">
+        <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
+        <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
+      </div>
+      <div id="compareResult">
+        <p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas para comparar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CONFIG -->
+  <div id="tab-config" style="display:none">
+    <div class="card">
+      <div class="section-title">Lembretes</div>
+      <div class="notif-row">
+        <label>Lembrete diário às 20h</label>
+        <button class="btn sm" onclick="pedirNotificacao()">Ativar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Strava</div>
+      <div id="cfgStravaOff">
+        <button class="btn strava" onclick="connectStrava()">Conectar Strava</button>
+      </div>
+      <div id="cfgStravaOn" style="display:none">
+        <div class="strava-status" style="margin-bottom:10px;">
+          <span class="dot green"></span>
+          <span style="font-size:14px;font-weight:600;">Conectado</span>
+        </div>
+        <button class="btn danger" onclick="desconectarStrava()">Desconectar Strava</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Seus dados</div>
+      <button class="btn" onclick="exportarDados()">Exportar histórico (JSON)</button>
+      <button class="btn danger" style="margin-top:6px;" onclick="limparDados()">Apagar todos os dados</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Sobre</div>
+      <p style="font-size:13px;color:#888;line-height:1.6;">As fotos e dados ficam salvos apenas neste navegador, neste dispositivo. Ninguém tem acesso além de você.<br><br>Para não perder os dados, não limpe o cache deste navegador.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="closeModal()">
+  <button class="close-modal" onclick="closeModal()">✕</button>
+  <img class="modal-img" id="modalImg" alt="foto ampliada">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CLIENT_ID = '227221';
+const REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
+
+let state = {
+  token: null,
+  refreshToken: null,
+  tokenExpiry: 0,
+  registros: [],
+  ultimaAtividade: null
+};
+
+function salvarState() {
+  try {
+    const s = JSON.parse(JSON.stringify(state));
+    localStorage.setItem('evolucao_v2', JSON.stringify(s));
+  } catch(e) { toast('Erro ao salvar — verifique o espaço do navegador'); }
+}
+
+function carregarState() {
+  try {
+    const s = localStorage.getItem('evolucao_v2');
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+}
+
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.display = 'none', dur);
+}
+
+function showTab(tab) {
+  ['registrar','timeline','comparar','config'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((el,i) => {
+    el.classList.toggle('active', ['registrar','timeline','comparar','config'][i]===tab);
+  });
+  if (tab==='timeline') renderTimeline();
+  if (tab==='comparar') renderCompareSelects();
+}
+
+function loadPreview(input, imgId, wrapId) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById(imgId).src = e.target.result;
+    document.getElementById(wrapId).style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function clearPhoto(imgId, wrapId, inputId) {
+  document.getElementById(imgId).src = '';
+  document.getElementById(wrapId).style.display = 'none';
+  document.getElementById(inputId).value = '';
+}
+
+function mostrarUltimoPeso() {
+  const comPeso = state.registros.filter(r => r.peso);
+  if (!comPeso.length) return;
+  const ultimo = comPeso[0];
+  const d = new Date(ultimo.data+'T12:00:00');
+  const label = d.toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  document.getElementById('ultimoPesoInfo').textContent = `Último: ${ultimo.peso}kg em ${label}`;
+}
+
+function salvarDia() {
+  const fotoR = document.getElementById('prevRosto').src;
+  const fotoC = document.getElementById('prevCorpo').src;
+  const peso = document.getElementById('pesoInput').value;
+
+  if (!fotoR && !fotoC && !peso) {
+    toast('Adicione ao menos uma foto ou o peso');
+    return;
+  }
+
+  const hoje = new Date().toISOString().split('T')[0];
+  const reg = {
+    data: hoje,
+    fotoRosto: (fotoR && fotoR.startsWith('data:')) ? fotoR : null,
+    fotoCorpo: (fotoC && fotoC.startsWith('data:')) ? fotoC : null,
+    peso: peso ? parseFloat(peso) : null,
+    strava: state.ultimaAtividade || null
+  };
+
+  const idx = state.registros.findIndex(r => r.data === hoje);
+  if (idx >= 0) state.registros[idx] = reg;
+  else state.registros.unshift(reg);
+
+  salvarState();
+  clearPhoto('prevRosto','wrapRosto','fotoRosto');
+  clearPhoto('prevCorpo','wrapCorpo','fotoCorpo');
+  document.getElementById('pesoInput').value = '';
+  mostrarUltimoPeso();
+  toast('Registro salvo! 💪');
+}
+
+function renderTimeline() {
+  const list = document.getElementById('timelineList');
+  const resumoCard = document.getElementById('resumoCard');
+
+  if (!state.registros.length) {
+    list.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece registrando hoje! 💪</div>';
+    resumoCard.style.display = 'none';
+    return;
+  }
+
+  const comPeso = state.registros.filter(r => r.peso);
+  if (comPeso.length >= 2) {
+    resumoCard.style.display = 'block';
+    const primeiro = comPeso[comPeso.length-1];
+    const ultimo = comPeso[0];
+    const dif = (ultimo.peso - primeiro.peso).toFixed(1);
+    const difNum = parseFloat(dif);
+    document.getElementById('resumoMetrics').innerHTML = `
+      <div class="metric"><div class="val">${primeiro.peso}kg</div><div class="lbl">peso inicial</div></div>
+      <div class="metric"><div class="val">${ultimo.peso}kg</div><div class="lbl">peso atual</div></div>
+      <div class="metric"><div class="val ${difNum<=0?'green':'red'}">${difNum>0?'+':''}${dif}kg</div><div class="lbl">variação total</div></div>
+      <div class="metric"><div class="val">${state.registros.length}</div><div class="lbl">dias registrados</div></div>
+    `;
+  } else {
+    resumoCard.style.display = 'none';
+  }
+
+  list.innerHTML = state.registros.map((r, i) => {
+    const d = new Date(r.data+'T12:00:00');
+    const label = d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+    const pesoPrev = state.registros.slice(i+1).find(x => x.peso)?.peso;
+    let difPesoHtml = '';
+    if (r.peso && pesoPrev) {
+      const dif = (r.peso - pesoPrev).toFixed(1);
+      const cl = parseFloat(dif) > 0 ? 'dif-negativo' : 'dif-positivo';
+      difPesoHtml = ` <span class="${cl}">${parseFloat(dif)>0?'+':''}${dif}kg</span>`;
+    }
+    const fotos = [r.fotoRosto, r.fotoCorpo].filter(Boolean);
+    const isHoje = r.data === new Date().toISOString().split('T')[0];
+    return `<div class="entry-card">
+      <div class="entry-header">
+        <span class="entry-date">${isHoje?'Hoje — ':''}${label}</span>
+        <button class="entry-del" onclick="deletarRegistro('${r.data}')">✕</button>
+      </div>
+      ${fotos.length ? `<div class="entry-photos">${fotos.map(f=>`<img src="${f}" onclick="openModal('${f}')" alt="foto">`).join('')}</div>` : ''}
+      ${r.peso ? `<div class="entry-weight">Peso: <strong>${r.peso}kg</strong>${difPesoHtml}</div>` : ''}
+      ${r.strava ? `<div class="entry-strava">🏃 ${r.strava}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function deletarRegistro(data) {
+  if (!confirm('Remover este registro?')) return;
+  state.registros = state.registros.filter(r => r.data !== data);
+  salvarState();
+  renderTimeline();
+  toast('Registro removido');
+}
+
+function renderCompareSelects() {
+  const opts = state.registros.map(r => {
+    const d = new Date(r.data+'T12:00:00');
+    return `<option value="${r.data}">${d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'2-digit'})}</option>`;
+  }).join('');
+  document.getElementById('cmpA').innerHTML = '<option value="">Data A</option>' + opts;
+  document.getElementById('cmpB').innerHTML = '<option value="">Data B</option>' + opts;
+  renderCompare();
+}
+
+function renderCompare() {
+  const va = document.getElementById('cmpA').value;
+  const vb = document.getElementById('cmpB').value;
+  const a = state.registros.find(r => r.data === va);
+  const b = state.registros.find(r => r.data === vb);
+  const el = document.getElementById('compareResult');
+  if (!a || !b) {
+    el.innerHTML = '<p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas para comparar</p>';
+    return;
+  }
+  const da = new Date(a.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  const db = new Date(b.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  const fotoA = a.fotoCorpo || a.fotoRosto;
+  const fotoB = b.fotoCorpo || b.fotoRosto;
+  let difHtml = '';
+  if (a.peso && b.peso) {
+    const dif = (a.peso - b.peso).toFixed(1);
+    const cl = parseFloat(dif) <= 0 ? 'dif-positivo' : 'dif-negativo';
+    difHtml = `<p style="text-align:center;margin-top:14px;font-size:15px;">Diferença: <span class="${cl}">${parseFloat(dif)>0?'+':''}${dif}kg</span></p>`;
+  }
+  el.innerHTML = `
+    <div class="compare-grid">
+      <div class="compare-col">
+        ${fotoA ? `<img src="${fotoA}" onclick="openModal('${fotoA}')" alt="foto A">` : '<div class="no-foto">sem foto</div>'}
+        <p>${da}${a.peso ? ` · ${a.peso}kg` : ''}</p>
+      </div>
+      <div class="compare-col">
+        ${fotoB ? `<img src="${fotoB}" onclick="openModal('${fotoB}')" alt="foto B">` : '<div class="no-foto">sem foto</div>'}
+        <p>${db}${b.peso ? ` · ${b.peso}kg` : ''}</p>
+      </div>
+    </div>
+    ${difHtml}
+  `;
+}
+
+function openModal(src) {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+}
+
+function connectStrava() {
+  const url = `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&approval_prompt=force&scope=activity:read_all`;
+  window.location.href = url;
+}
+
+async function trocarCode(code) {
+  toast('Conectando ao Strava...', 4000);
+  const secret = prompt('Para finalizar a conexão, cole seu Client Secret do Strava\n(strava.com/settings/api → Client Secret):');
+  if (!secret) { toast('Conexão cancelada'); return; }
+  try {
+    const r = await fetch('https://www.strava.com/oauth/token', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        client_secret: secret.trim(),
+        code: code,
+        grant_type: 'authorization_code'
+      })
+    });
+    const d = await r.json();
+    if (d.access_token) {
+      state.token = d.access_token;
+      state.refreshToken = d.refresh_token;
+      state.tokenExpiry = d.expires_at;
+      salvarState();
+      atualizarUIStrava(true);
+      await syncStrava();
+      toast('Strava conectado! ✓');
+      window.history.replaceState({}, document.title, REDIRECT_URI);
+    } else {
+      toast('Erro: ' + (d.message || JSON.stringify(d)));
+    }
+  } catch(e) {
+    toast('Erro ao conectar com o Strava');
+  }
+}
+
+function atualizarUIStrava(conectado) {
+  document.getElementById('stravaOff').style.display = conectado ? 'none' : 'block';
+  document.getElementById('stravaOn').style.display = conectado ? 'block' : 'none';
+  document.getElementById('cfgStravaOff').style.display = conectado ? 'none' : 'block';
+  document.getElementById('cfgStravaOn').style.display = conectado ? 'block' : 'none';
+}
+
+async function syncStrava() {
+  if (!state.token) return;
+  document.getElementById('stravaActInfo').textContent = 'Buscando atividades de hoje...';
+  try {
+    const hoje = new Date();
+    const after = Math.floor(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime() / 1000);
+    const r = await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${after}&per_page=10`, {
+      headers: {Authorization: 'Bearer ' + state.token}
+    });
+    if (r.status === 401) {
+      toast('Token expirado — reconecte o Strava');
+      desconectarStrava();
+      return;
+    }
+    const acts = await r.json();
+    if (Array.isArray(acts) && acts.length) {
+      const total = Math.round(acts.reduce((s,a) => s + (a.calories || 0), 0));
+      const nomes = acts.map(a => a.name).join(', ');
+      const dist = acts.reduce((s,a) => s + (a.distance || 0), 0);
+      const distKm = (dist/1000).toFixed(1);
+      state.ultimaAtividade = `${nomes} · ${distKm}km · ${total} kcal`;
+      document.getElementById('stravaActInfo').textContent = state.ultimaAtividade;
+    } else {
+      state.ultimaAtividade = null;
+      document.getElementById('stravaActInfo').textContent = 'Nenhuma atividade registrada hoje ainda.';
+    }
+    salvarState();
+  } catch(e) {
+    document.getElementById('stravaActInfo').textContent = 'Erro ao buscar atividades.';
+  }
+}
+
+function desconectarStrava() {
+  state.token = null;
+  state.refreshToken = null;
+  state.tokenExpiry = 0;
+  state.ultimaAtividade = null;
+  salvarState();
+  atualizarUIStrava(false);
+  toast('Strava desconectado');
+}
+
+function pedirNotificacao() {
+  if (!('Notification' in window)) {
+    toast('Seu navegador não suporta notificações');
+    return;
+  }
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') {
+      toast('Notificações ativadas! Lembretes às 20h.');
+      agendarLembrete();
+    } else {
+      toast('Permissão negada pelo navegador');
+    }
+  });
+}
+
+function agendarLembrete() {
+  const agora = new Date();
+  const alvo = new Date();
+  alvo.setHours(20, 0, 0, 0);
+  if (alvo <= agora) alvo.setDate(alvo.getDate() + 1);
+  const ms = alvo - agora;
+  setTimeout(() => {
+    new Notification('Minha Evolução 💪', {
+      body: 'Hora de registrar o dia! Tire suas fotos e anote o peso.',
+      icon: ''
+    });
+    agendarLembrete();
+  }, ms);
+}
+
+function exportarDados() {
+  const dados = state.registros.map(r => ({
+    data: r.data,
+    peso: r.peso,
+    strava: r.strava,
+    temFotoRosto: !!r.fotoRosto,
+    temFotoCorpo: !!r.fotoCorpo
+  }));
+  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'evolucao_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  toast('Exportado!');
+}
+
+function limparDados() {
+  if (!confirm('Apagar TODOS os registros e fotos? Isso não pode ser desfeito.')) return;
+  state.registros = [];
+  state.token = null;
+  state.refreshToken = null;
+  salvarState();
+  atualizarUIStrava(false);
+  toast('Todos os dados apagados');
+}
+
+// Init
+document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('pt-BR', {
+  weekday:'long', day:'numeric', month:'long'
+});
+
+carregarState();
+if (state.token) atualizarUIStrava(true);
+mostrarUltimoPeso();
+
+// Strava OAuth callback
+const params = new URLSearchParams(window.location.search);
+const code = params.get('code');
+if (code) {
+  setTimeout(() => trocarCode(code), 500);
+}
+</script>
+</body>
+</html>
