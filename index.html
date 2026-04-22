@@ -462,7 +462,39 @@ let state={
 };
 
 function salvarState(){try{localStorage.setItem('evolucao_v7',JSON.stringify(state));}catch(e){toast('Erro ao salvar — espaço insuficiente');}}
-function carregarState(){try{const s=localStorage.getItem('evolucao_v7');if(s)state=JSON.parse(s);}catch(e){}}
+function carregarState(){
+  try{
+    // Tenta carregar v7 primeiro
+    const s7=localStorage.getItem('evolucao_v7');
+    if(s7){state=JSON.parse(s7);return;}
+    // Migração automática de versões anteriores
+    const chaves=['evolucao_v6','evolucao_v5','evolucao_v4','evolucao_v3','evolucao_v2'];
+    for(const chave of chaves){
+      const s=localStorage.getItem(chave);
+      if(s){
+        const old=JSON.parse(s);
+        // copia todos os campos conhecidos
+        if(old.registros) state.registros=old.registros;
+        if(old.token) state.token=old.token;
+        if(old.refreshToken) state.refreshToken=old.refreshToken;
+        if(old.tokenExpiry) state.tokenExpiry=old.tokenExpiry;
+        if(old.clientSecret) state.clientSecret=old.clientSecret;
+        if(old.altura) state.altura=old.altura;
+        if(old.sexo) state.sexo=old.sexo;
+        if(old.idade) state.idade=old.idade;
+        if(old.habitos&&old.habitos.length) state.habitos=old.habitos;
+        if(old.metaPeso) state.metaPeso=old.metaPeso;
+        if(old.metaAbd) state.metaAbd=old.metaAbd;
+        if(old.metaGord) state.metaGord=old.metaGord;
+        if(old.ultimaAtividade) state.ultimaAtividade=old.ultimaAtividade;
+        // salva já na v7 pra próxima vez
+        salvarState();
+        console.log('Migrado de '+chave+' para v7');
+        return;
+      }
+    }
+  }catch(e){console.error('Erro ao carregar state',e);}
+}
 
 function toast(msg,dur=2500){
   const t=document.getElementById('toast');
