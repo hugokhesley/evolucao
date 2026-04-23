@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7,13 +6,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Minha Evolução</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;}
 .app{max-width:430px;margin:0 auto;padding:1rem;padding-bottom:5rem;}
-.header{margin-bottom:1.25rem;}
+.header{margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;}
 .header h1{font-size:22px;font-weight:600;}
 .header p{font-size:13px;color:#888;margin-top:2px;}
+.user-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;}
+.user-initials{width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#fff;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .tabs{display:flex;gap:4px;margin-bottom:1rem;background:#e8e8e2;padding:4px;border-radius:12px;}
 .tab{flex:1;padding:8px 4px;border:none;border-radius:9px;background:transparent;font-size:12px;cursor:pointer;color:#666;transition:all 0.15s;font-weight:500;}
 .tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
@@ -46,6 +48,8 @@ input[type=file]{display:none;}
 .btn:hover{background:#f5f5f0;}
 .btn:active{transform:scale(0.98);}
 .btn.primary{background:#1a1a1a;border-color:#1a1a1a;color:#fff;font-weight:600;font-size:15px;padding:14px;}
+.btn.google{background:#fff;border:1.5px solid #e0e0e0;color:#1a1a1a;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-weight:500;padding:14px;}
+.btn.google:hover{background:#f5f5f0;}
 .btn.strava{background:#fc4c02;border-color:#fc4c02;color:#fff;font-weight:600;}
 .btn.danger{color:#D85A30;border-color:#D85A30;}
 .btn.danger:hover{background:#fff5f2;}
@@ -55,10 +59,11 @@ input[type=file]{display:none;}
 .entry-card{background:#f9f9f7;border-radius:14px;padding:12px 14px;border:1px solid #ebebeb;}
 .entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .entry-date{font-size:14px;font-weight:600;}
+.entry-actions{display:flex;gap:8px;align-items:center;}
+.entry-edit{background:none;border:none;cursor:pointer;font-size:15px;padding:0 2px;opacity:0.4;}
+.entry-edit:hover{opacity:1;}
 .entry-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:0 2px;}
 .entry-del:hover{color:#D85A30;}
-.entry-edit{background:none;border:none;cursor:pointer;font-size:15px;padding:0 2px;opacity:0.5;}
-.entry-edit:hover{opacity:1;}
 .entry-photos{display:flex;gap:6px;margin-bottom:8px;}
 .entry-photos img{flex:1;min-width:0;border-radius:10px;object-fit:cover;height:100px;cursor:pointer;}
 .entry-row{font-size:13px;color:#666;margin-top:4px;}
@@ -92,6 +97,21 @@ select{padding:10px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 
+/* LOGIN */
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;}
+.login-logo{font-size:60px;margin-bottom:1.5rem;}
+.login-title{font-size:26px;font-weight:700;margin-bottom:8px;}
+.login-sub{font-size:15px;color:#888;margin-bottom:2.5rem;line-height:1.5;}
+.login-features{text-align:left;background:#fff;border-radius:16px;padding:1.25rem;margin-bottom:2rem;width:100%;max-width:360px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.login-feature{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px;color:#444;}
+.login-feature span{font-size:20px;}
+
+/* LOADING */
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;}
+.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top-color:#1a1a1a;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.saving-indicator{position:fixed;top:16px;right:16px;background:#1D9E75;color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;display:none;z-index:998;}
+
 /* STREAK */
 .streak-banner{background:linear-gradient(135deg,#1a1a1a 0%,#333 100%);border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:14px;}
 .streak-fire{font-size:36px;line-height:1;}
@@ -108,9 +128,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .gauge-bar-wrap{position:relative;height:12px;border-radius:99px;overflow:hidden;margin-bottom:5px;}
 .gauge-bar-imc{background:linear-gradient(to right,#378ADD 0%,#1D9E75 18.5%,#EF9F27 37%,#D85A30 56%,#993C1D 100%);}
 .gauge-bar-cin{background:linear-gradient(to right,#1D9E75 0%,#EF9F27 50%,#D85A30 100%);}
-.gauge-bar-gord{background:linear-gradient(to right,#378ADD 0%,#1D9E75 25%,#EF9F27 60%,#D85A30 100%);}
-.gauge-bar-musc{background:linear-gradient(to right,#D85A30 0%,#EF9F27 30%,#1D9E75 70%,#378ADD 100%);}
-.gauge-bar-agua{background:linear-gradient(to right,#D85A30 0%,#EF9F27 30%,#1D9E75 60%,#378ADD 100%);}
 .gauge-marker{position:absolute;top:-4px;width:20px;height:20px;border-radius:50%;background:#1a1a1a;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);transform:translateX(-50%);transition:left 0.5s;}
 .gauge-scale{display:flex;justify-content:space-between;font-size:10px;color:#aaa;}
 .gauge-frase{font-size:12px;font-weight:600;margin-top:8px;padding:6px 10px;border-radius:8px;text-align:center;}
@@ -120,10 +137,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .frase-laranja{background:#faece7;color:#993C1D;}
 .frase-vermelho{background:#fcebeb;color:#A32D2D;}
 
-/* BALANÇA EXTRA */
+/* BALANÇA */
 .balanca-extra{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
 .balanca-item{background:#f9f9f7;border-radius:12px;padding:10px 12px;text-align:center;border:1px solid #ebebeb;}
-.balanca-val{font-size:18px;font-weight:700;color:#1a1a1a;}
+.balanca-val{font-size:18px;font-weight:700;}
 .balanca-lbl{font-size:11px;color:#888;margin-top:2px;}
 .balanca-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;margin-top:4px;display:inline-block;}
 .tag-verde{background:#e8f5ef;color:#0F6E56;}
@@ -166,293 +183,249 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .secret-input-wrap input{width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;font-family:monospace;}
 .secret-hint{font-size:12px;color:#aaa;margin-top:6px;line-height:1.5;}
 </style>
-
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <h1>Minha evolução</h1>
-    <p id="todayLabel"></p>
-  </div>
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('registrar')">Hoje</button>
-    <button class="tab" onclick="showTab('timeline')">Histórico</button>
-    <button class="tab" onclick="showTab('comparar')">Comparar</button>
-    <button class="tab" onclick="showTab('config')">Config</button>
-  </div>
 
-  <!-- TAB REGISTRAR -->
-
-  <div id="tab-registrar">
-
-```
-<!-- Streak -->
-<div class="streak-banner" id="streakBanner">
-  <div class="streak-fire" id="streakFire">🔥</div>
-  <div class="streak-info">
-    <div class="streak-num" id="streakNum">0</div>
-    <div class="streak-label" id="streakLabel">dias de sequência</div>
-    <div class="streak-sub" id="streakSub">Complete os hábitos de hoje!</div>
-  </div>
+<!-- Loading -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <p style="font-size:14px;color:#888;">Carregando...</p>
 </div>
 
-<!-- Gauges IMC + Cintura -->
-<div class="gauge-card" id="gaugeCard" style="display:none">
-  <div class="gauge-grid">
-    <div id="imcBlock">
-      <div class="section-title">IMC</div>
-      <div class="gauge-valor" id="imcValor">--</div>
-      <div class="gauge-label" id="imcCat">--</div>
-      <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
-      <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
-      <div class="gauge-frase" id="imcFrase"></div>
-    </div>
-    <div id="cinBlock" style="display:none">
-      <div class="section-title">Cintura</div>
-      <div class="gauge-valor" id="cinValor">--</div>
-      <div class="gauge-label" id="cinCat">--</div>
-      <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
-      <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
-      <div class="gauge-frase" id="cinFrase"></div>
-    </div>
+<!-- Login -->
+<div class="login-screen" id="loginScreen" style="display:none">
+  <div class="login-logo">💪</div>
+  <div class="login-title">Minha Evolução</div>
+  <div class="login-sub">Acompanhe seu corpo, hábitos e evolução com dados reais salvos na nuvem.</div>
+  <div class="login-features">
+    <div class="login-feature"><span>📸</span> Fotos diárias salvas na nuvem</div>
+    <div class="login-feature"><span>⚖️</span> Peso, IMC e composição corporal</div>
+    <div class="login-feature"><span>🎯</span> Metas com projeção de chegada</div>
+    <div class="login-feature"><span>🔥</span> Streak de hábitos e medicações</div>
+    <div class="login-feature"><span>🏃</span> Integração com Strava</div>
   </div>
-  <!-- Balança extra preview -->
-  <div id="balancaPreview" style="display:none">
-    <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
-      <div class="section-title">Composição corporal</div>
-      <div class="balanca-extra" id="balancaPreviewGrid"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Metas -->
-<div class="meta-card" id="metaCard" style="display:none">
-  <div class="section-title">Progresso nas metas</div>
-  <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
-  <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
-  <div id="metaGordBlock" style="display:none" class="meta-item"></div>
-</div>
-
-<div class="card">
-  <div class="section-title">Fotos de hoje</div>
-  <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
-    <span style="font-size:20px">🤳</span><span>Foto do rosto (câmera frontal)</span>
+  <button class="btn google" onclick="loginGoogle()" style="max-width:360px;width:100%;">
+    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Entrar com Google
   </button>
-  <input type="file" id="fotoRosto" accept="image/*" capture="user" onchange="loadPreview(this,'prevRosto','wrapRosto')">
-  <div class="preview-wrap" id="wrapRosto">
-    <img id="prevRosto" alt="rosto">
-    <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
-  </div>
-  <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
-    <span style="font-size:20px">📷</span><span>Foto do corpo (câmera traseira)</span>
-  </button>
-  <input type="file" id="fotoCorpo" accept="image/*" capture="environment" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
-  <div class="preview-wrap" id="wrapCorpo">
-    <img id="prevCorpo" alt="corpo">
-    <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
-  </div>
 </div>
 
-<div class="card">
-  <div class="section-title">Medidas — balança</div>
-  <div class="input-row">
-    <label>Peso</label>
-    <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
-    <span>kg</span>
-  </div>
-  <div class="input-row">
-    <label>Cintura</label>
-    <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
-    <span>cm</span>
-  </div>
-  <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
-    <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
-    <div class="input-grid">
-      <div class="input-grid-item">
-        <label>% Gordura</label>
-        <input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()">
-        <div class="unit">%</div>
+<!-- App principal -->
+<div id="mainApp" style="display:none">
+  <div class="saving-indicator" id="savingIndicator">Salvando...</div>
+
+  <div class="app">
+    <div class="header">
+      <div>
+        <h1>Minha evolução</h1>
+        <p id="todayLabel"></p>
       </div>
-      <div class="input-grid-item">
-        <label>% Músculo</label>
-        <input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8">
-        <div class="unit">%</div>
-      </div>
-      <div class="input-grid-item">
-        <label>% Água</label>
-        <input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2">
-        <div class="unit">%</div>
-      </div>
-      <div class="input-grid-item">
-        <label>Metabolismo basal</label>
-        <input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108">
-        <div class="unit">kcal</div>
-      </div>
-      <div class="input-grid-item">
-        <label>Idade corporal</label>
-        <input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37">
-        <div class="unit">anos</div>
-      </div>
-    </div>
-  </div>
-  <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
-</div>
-
-<div class="card">
-  <div class="section-title">Medicações e hábitos de hoje</div>
-  <div id="checklistWrap"></div>
-  <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
-  <div class="check-count" id="checkCount">0 de 0</div>
-</div>
-
-<div class="card">
-  <div class="section-title">Strava — atividade de hoje</div>
-  <div id="stravaOff">
-    <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
-    <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
-  </div>
-  <div id="stravaOn" style="display:none">
-    <div class="strava-status">
-      <span class="dot green"></span>
-      <span style="font-size:14px;font-weight:600;">Strava conectado</span>
-      <span class="badge">ativo</span>
-    </div>
-    <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
-    <button class="btn sm" onclick="syncStrava()">Atualizar</button>
-  </div>
-</div>
-
-<button class="btn primary" onclick="salvarDia()">Salvar registro de hoje</button>
-```
-
-  </div>
-
-  <!-- TAB TIMELINE -->
-
-  <div id="tab-timeline" style="display:none">
-    <div class="card" id="resumoCard" style="display:none">
-      <div class="section-title">Resumo geral</div>
-      <div class="metric-row" id="resumoMetrics"></div>
-    </div>
-    <div class="card">
-      <div class="section-title">Histórico</div>
-      <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
-    </div>
-  </div>
-
-  <!-- TAB COMPARAR -->
-
-  <div id="tab-comparar" style="display:none">
-    <div class="card">
-      <div class="section-title">Comparar dois dias</div>
-      <div class="compare-selects">
-        <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
-        <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
-      </div>
-      <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
-    </div>
-  </div>
-
-  <!-- TAB CONFIG -->
-
-  <div id="tab-config" style="display:none">
-    <div class="card">
-      <div class="section-title">Seus dados fixos</div>
-      <div class="input-row">
-        <label>Altura</label>
-        <input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" oninput="salvarAltura()">
-        <span>cm</span>
-      </div>
-      <div class="input-row" style="margin-bottom:8px">
-        <label>Sexo biológico</label>
-        <select id="sexoConfig" onchange="salvarSexo()" style="flex:1;padding:10px;font-size:14px;">
-          <option value="">Selecione</option>
-          <option value="M">Masculino</option>
-          <option value="F">Feminino</option>
-        </select>
-      </div>
-      <div class="input-row" style="margin-bottom:0">
-        <label>Idade real</label>
-        <input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" oninput="salvarIdade()">
-        <span>anos</span>
-      </div>
+      <div class="user-initials" id="userAvatar" onclick="confirmarLogout()"></div>
     </div>
 
-```
-<div class="card">
-  <div class="section-title">Minhas metas</div>
-  <div class="input-row">
-    <label>Meta peso</label>
-    <input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" oninput="salvarMetas()">
-    <span>kg</span>
-  </div>
-  <div class="input-row">
-    <label>Meta cintura</label>
-    <input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" oninput="salvarMetas()">
-    <span>cm</span>
-  </div>
-  <div class="input-row" style="margin-bottom:0">
-    <label>Meta gordura</label>
-    <input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" oninput="salvarMetas()">
-    <span>%</span>
-  </div>
-  <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente. Aparecem na tela principal com projeção.</p>
-</div>
-
-<div class="card">
-  <div class="section-title">Lembretes</div>
-  <div class="notif-row">
-    <label>Lembrete diário às 20h</label>
-    <button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button>
-  </div>
-  <div class="notif-row">
-    <label>Foto semanal (domingo)</label>
-    <button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button>
-  </div>
-</div>
-
-<div class="card">
-  <div class="section-title">Medicações e hábitos</div>
-  <div id="habitosListConfig"></div>
-  <div class="add-habito-row">
-    <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
-    <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
-  </div>
-</div>
-
-<div class="card">
-  <div class="section-title">Strava</div>
-  <div id="cfgStravaOff">
-    <button class="btn strava" onclick="connectStrava()">Conectar Strava</button>
-    <div class="secret-input-wrap">
-      <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
-      <p class="secret-hint">Cole o Client Secret aqui antes de conectar. Salvo no iPhone.</p>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('registrar')">Hoje</button>
+      <button class="tab" onclick="showTab('timeline')">Histórico</button>
+      <button class="tab" onclick="showTab('comparar')">Comparar</button>
+      <button class="tab" onclick="showTab('config')">Config</button>
     </div>
-  </div>
-  <div id="cfgStravaOn" style="display:none">
-    <div class="strava-status" style="margin-bottom:6px;">
-      <span class="dot green"></span>
-      <span style="font-size:14px;font-weight:600;">Conectado</span>
-      <span class="badge">ativo</span>
+
+    <!-- TAB REGISTRAR -->
+    <div id="tab-registrar">
+      <div class="streak-banner">
+        <div class="streak-fire" id="streakFire">💊</div>
+        <div class="streak-info">
+          <div class="streak-num" id="streakNum">0</div>
+          <div class="streak-label" id="streakLabel">dias de sequência</div>
+          <div class="streak-sub" id="streakSub">Complete os hábitos de hoje!</div>
+        </div>
+      </div>
+
+      <div class="gauge-card" id="gaugeCard" style="display:none">
+        <div class="gauge-grid">
+          <div id="imcBlock">
+            <div class="section-title">IMC</div>
+            <div class="gauge-valor" id="imcValor">--</div>
+            <div class="gauge-label" id="imcCat">--</div>
+            <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
+            <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
+            <div class="gauge-frase" id="imcFrase"></div>
+          </div>
+          <div id="cinBlock" style="display:none">
+            <div class="section-title">Cintura</div>
+            <div class="gauge-valor" id="cinValor">--</div>
+            <div class="gauge-label" id="cinCat">--</div>
+            <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
+            <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
+            <div class="gauge-frase" id="cinFrase"></div>
+          </div>
+        </div>
+        <div id="balancaPreview" style="display:none">
+          <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
+            <div class="section-title">Composição corporal</div>
+            <div class="balanca-extra" id="balancaPreviewGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="meta-card" id="metaCard" style="display:none">
+        <div class="section-title">Progresso nas metas</div>
+        <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
+        <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
+        <div id="metaGordBlock" style="display:none" class="meta-item"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Fotos de hoje</div>
+        <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
+          <span style="font-size:20px">🤳</span><span>Foto do rosto</span>
+        </button>
+        <input type="file" id="fotoRosto" accept="image/*" onchange="loadPreview(this,'prevRosto','wrapRosto')">
+        <div class="preview-wrap" id="wrapRosto">
+          <img id="prevRosto" alt="rosto">
+          <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
+        </div>
+        <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
+          <span style="font-size:20px">📷</span><span>Foto do corpo</span>
+        </button>
+        <input type="file" id="fotoCorpo" accept="image/*" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
+        <div class="preview-wrap" id="wrapCorpo">
+          <img id="prevCorpo" alt="corpo">
+          <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Medidas — balança</div>
+        <div class="input-row">
+          <label>Peso</label>
+          <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
+          <span>kg</span>
+        </div>
+        <div class="input-row">
+          <label>Cintura</label>
+          <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
+          <span>cm</span>
+        </div>
+        <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
+          <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
+          <div class="input-grid">
+            <div class="input-grid-item"><label>% Gordura</label><input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>% Músculo</label><input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>% Água</label><input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>Metabolismo basal</label><input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108"><div class="unit">kcal</div></div>
+            <div class="input-grid-item"><label>Idade corporal</label><input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37"><div class="unit">anos</div></div>
+          </div>
+        </div>
+        <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Medicações e hábitos de hoje</div>
+        <div id="checklistWrap"></div>
+        <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
+        <div class="check-count" id="checkCount">0 de 0</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Strava — atividade de hoje</div>
+        <div id="stravaOff">
+          <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
+          <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
+          <div class="secret-input-wrap">
+            <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
+            <p class="secret-hint">Cole o Client Secret antes de conectar. Salvo na nuvem.</p>
+          </div>
+        </div>
+        <div id="stravaOn" style="display:none">
+          <div class="strava-status">
+            <span class="dot green"></span>
+            <span style="font-size:14px;font-weight:600;">Strava conectado</span>
+            <span class="badge">ativo</span>
+          </div>
+          <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
+          <button class="btn sm" onclick="syncStrava()">Atualizar</button>
+        </div>
+      </div>
+
+      <div id="editandoBanner" style="display:none;background:#faeeda;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#854F0B;font-weight:500;text-align:center;"></div>
+      <button class="btn primary" onclick="salvarDia()" id="btnSalvar">Salvar registro de hoje</button>
     </div>
-    <p id="cfgTokenExpiry" style="font-size:12px;color:#aaa;margin-bottom:10px;"></p>
-    <button class="btn danger" onclick="desconectarStrava()">Desconectar Strava</button>
-  </div>
-</div>
 
-<div class="card">
-  <div class="section-title">Dados</div>
-  <button class="btn" onclick="exportarDados()">Exportar histórico (JSON)</button>
-  <button class="btn" onclick="importarDados()" style="margin-top:6px;">Importar histórico (JSON)</button>
-  <input type="file" id="importFile" accept=".json" style="display:none" onchange="processarImport(this)">
-  <button class="btn danger" style="margin-top:6px;" onclick="limparDados()">Apagar todos os dados</button>
-</div>
-<div class="card">
-  <div class="section-title">Sobre</div>
-  <p style="font-size:13px;color:#888;line-height:1.6;">Dados salvos apenas no Safari do seu iPhone. Não limpe o cache para não perder os registros.<br><br>Exporte o JSON semanalmente como backup.</p>
-</div>
-```
+    <!-- TAB TIMELINE -->
+    <div id="tab-timeline" style="display:none">
+      <div class="card" id="resumoCard" style="display:none">
+        <div class="section-title">Resumo geral</div>
+        <div class="metric-row" id="resumoMetrics"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Histórico</div>
+        <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
+      </div>
+    </div>
 
+    <!-- TAB COMPARAR -->
+    <div id="tab-comparar" style="display:none">
+      <div class="card">
+        <div class="section-title">Comparar dois dias</div>
+        <div class="compare-selects">
+          <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
+          <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
+        </div>
+        <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
+      </div>
+    </div>
+
+    <!-- TAB CONFIG -->
+    <div id="tab-config" style="display:none">
+      <div class="card">
+        <div class="section-title">Seus dados fixos</div>
+        <div class="input-row"><label>Altura</label><input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" onchange="salvarPerfil()"><span>cm</span></div>
+        <div class="input-row" style="margin-bottom:8px">
+          <label>Sexo biológico</label>
+          <select id="sexoConfig" onchange="salvarPerfil()" style="flex:1;padding:10px;font-size:14px;">
+            <option value="">Selecione</option>
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+        <div class="input-row" style="margin-bottom:0"><label>Idade real</label><input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" onchange="salvarPerfil()"><span>anos</span></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Minhas metas</div>
+        <div class="input-row"><label>Meta peso</label><input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" onchange="salvarPerfil()"><span>kg</span></div>
+        <div class="input-row"><label>Meta cintura</label><input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" onchange="salvarPerfil()"><span>cm</span></div>
+        <div class="input-row" style="margin-bottom:0"><label>Meta gordura</label><input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" onchange="salvarPerfil()"><span>%</span></div>
+        <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente na nuvem.</p>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Medicações e hábitos</div>
+        <div id="habitosListConfig"></div>
+        <div class="add-habito-row">
+          <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
+          <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Lembretes</div>
+        <div class="notif-row"><label>Lembrete diário às 20h</label><button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button></div>
+        <div class="notif-row"><label>Foto semanal (domingo)</label><button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Conta</div>
+        <p id="userEmail" style="font-size:14px;color:#888;margin-bottom:10px;"></p>
+        <button class="btn danger" onclick="confirmarLogout()">Sair da conta</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Sobre</div>
+        <p style="font-size:13px;color:#888;line-height:1.6;">Seus dados e fotos são salvos com segurança na nuvem. Acesse de qualquer dispositivo fazendo login com o mesmo Google.</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -463,191 +436,290 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div class="toast" id="toast"></div>
 
 <script>
+const SUPABASE_URL='https://rhrqovazjbzpaupcpvrj.supabase.co';
+const SUPABASE_KEY='sb_publishable_Zc7Dsudx22JpYuCNt6Ye-Q_-TdEHJgt';
 const CLIENT_ID='227221';
-const REDIRECT_URI=window.location.href.split('?')[0].split('#')[0];
-const DEFAULT_HABITOS=['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'];
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let state={
-  token:null,refreshToken:null,tokenExpiry:0,clientSecret:null,
-  registros:[],ultimaAtividade:null,
-  altura:null,sexo:'M',idade:null,
-  habitos:[...DEFAULT_HABITOS],
-  metaPeso:null,metaAbd:null,metaGord:null
-};
-
-function salvarState(){try{localStorage.setItem('evolucao_v7',JSON.stringify(state));}catch(e){toast('Erro ao salvar — espaço insuficiente');}}
-function carregarState(){
-  try{
-    // Tenta carregar v7 primeiro
-    const s7=localStorage.getItem('evolucao_v7');
-    if(s7){state=JSON.parse(s7);return;}
-    // Migração automática de versões anteriores
-    const chaves=['evolucao_v6','evolucao_v5','evolucao_v4','evolucao_v3','evolucao_v2'];
-    for(const chave of chaves){
-      const s=localStorage.getItem(chave);
-      if(s){
-        const old=JSON.parse(s);
-        // copia todos os campos conhecidos
-        if(old.registros) state.registros=old.registros;
-        if(old.token) state.token=old.token;
-        if(old.refreshToken) state.refreshToken=old.refreshToken;
-        if(old.tokenExpiry) state.tokenExpiry=old.tokenExpiry;
-        if(old.clientSecret) state.clientSecret=old.clientSecret;
-        if(old.altura) state.altura=old.altura;
-        if(old.sexo) state.sexo=old.sexo;
-        if(old.idade) state.idade=old.idade;
-        if(old.habitos&&old.habitos.length) state.habitos=old.habitos;
-        if(old.metaPeso) state.metaPeso=old.metaPeso;
-        if(old.metaAbd) state.metaAbd=old.metaAbd;
-        if(old.metaGord) state.metaGord=old.metaGord;
-        if(old.ultimaAtividade) state.ultimaAtividade=old.ultimaAtividade;
-        // salva já na v7 pra próxima vez
-        salvarState();
-        console.log('Migrado de '+chave+' para v7');
-        return;
-      }
-    }
-  }catch(e){console.error('Erro ao carregar state',e);}
-}
+let currentUser=null;
+let perfil={altura:null,sexo:'M',idade:null,meta_peso:null,meta_abd:null,meta_gord:null,habitos:['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'],strava_token:null,strava_refresh_token:null,strava_token_expiry:0,strava_client_secret:null};
+let registros=[];
+let ultimaAtividade=null;
+let editandoData=null;
+let fotoRostoFile=null,fotoCorpoFile=null;
+let fotoRostoUrl=null,fotoCorpoUrl=null;
 
 function toast(msg,dur=2500){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.display='block';
   clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.display='none',dur);
 }
+function showSaving(v){document.getElementById('savingIndicator').style.display=v?'block':'none';}
 
-function showTab(tab){
-  ['registrar','timeline','comparar','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','config'][i]===tab);});
-  if(tab==='timeline')renderTimeline();
-  if(tab==='comparar')renderCompareSelects();
-  if(tab==='config')carregarConfig();
+// AUTH
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){await onLogin(session.user);}
+  else{
+    // verifica redirect OAuth
+    const hash=window.location.hash;
+    if(hash&&hash.includes('access_token')){
+      const{data:{session:s}}=await sb.auth.getSession();
+      if(s){await onLogin(s.user);return;}
+    }
+    showLogin();
+  }
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='SIGNED_IN'&&session){await onLogin(session.user);}
+    if(event==='SIGNED_OUT'){showLogin();}
+  });
 }
 
+function showLogin(){
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('mainApp').style.display='none';
+}
+
+async function loginGoogle(){
+  const{error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.href.split('?')[0].split('#')[0]}
+  });
+  if(error)toast('Erro ao fazer login: '+error.message);
+}
+
+async function onLogin(user){
+  currentUser=user;
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  const initials=(user.user_metadata?.full_name||user.email||'U').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('userAvatar').textContent=initials;
+  document.getElementById('userEmail').textContent=user.email;
+  document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  await carregarPerfil();
+  await carregarRegistros();
+  renderChecklist();
+  renderMetas();
+  mostrarUltimoPeso();
+  if(perfil.strava_token){atualizarUIStrava(true);await syncStrava();}
+}
+
+function confirmarLogout(){
+  if(confirm('Sair da conta?'))sb.auth.signOut();
+}
+
+// PERFIL
+async function carregarPerfil(){
+  const{data}=await sb.from('perfis').select('*').eq('id',currentUser.id).single();
+  if(data){
+    perfil={...perfil,...data};
+    if(!perfil.habitos||!perfil.habitos.length) perfil.habitos=['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'];
+  } else {
+    // cria perfil inicial
+    await sb.from('perfis').insert({id:currentUser.id,habitos:perfil.habitos});
+  }
+}
+
+async function salvarPerfil(){
+  const altura=parseInt(document.getElementById('alturaConfig').value)||perfil.altura;
+  const sexo=document.getElementById('sexoConfig').value||perfil.sexo;
+  const idade=parseInt(document.getElementById('idadeConfig').value)||perfil.idade;
+  const meta_peso=parseFloat(document.getElementById('metaPesoConfig').value)||perfil.meta_peso;
+  const meta_abd=parseFloat(document.getElementById('metaAbdConfig').value)||perfil.meta_abd;
+  const meta_gord=parseFloat(document.getElementById('metaGordConfig').value)||perfil.meta_gord;
+  perfil={...perfil,altura,sexo,idade,meta_peso,meta_abd,meta_gord};
+  showSaving(true);
+  await sb.from('perfis').upsert({id:currentUser.id,...perfil});
+  showSaving(false);
+  renderMetas();
+  toast('Configurações salvas!');
+}
+
+function carregarConfig(){
+  if(perfil.altura)document.getElementById('alturaConfig').value=perfil.altura;
+  if(perfil.sexo)document.getElementById('sexoConfig').value=perfil.sexo;
+  if(perfil.idade)document.getElementById('idadeConfig').value=perfil.idade;
+  if(perfil.meta_peso)document.getElementById('metaPesoConfig').value=perfil.meta_peso;
+  if(perfil.meta_abd)document.getElementById('metaAbdConfig').value=perfil.meta_abd;
+  if(perfil.meta_gord)document.getElementById('metaGordConfig').value=perfil.meta_gord;
+  if(perfil.strava_client_secret)document.getElementById('clientSecretInput').value='••••••••••••••••••••';
+  if(perfil.strava_token)atualizarUIStrava(true);
+  renderHabitosConfig();
+}
+
+// REGISTROS
+async function carregarRegistros(){
+  const{data}=await sb.from('registros').select('*').eq('user_id',currentUser.id).order('data',{ascending:false});
+  if(data){
+    // carrega URLs das fotos
+    for(const r of data){
+      if(r.foto_rosto)r.fotoRostoUrl=await getFotoUrl(r.foto_rosto);
+      if(r.foto_corpo)r.fotoCorpoUrl=await getFotoUrl(r.foto_corpo);
+    }
+    registros=data;
+  }
+}
+
+async function getFotoUrl(path){
+  if(!path)return null;
+  const{data}=await sb.storage.from('fotos').createSignedUrl(path,3600);
+  return data?.signedUrl||null;
+}
+
+async function uploadFoto(file,tipo){
+  if(!file)return null;
+  const ext=file.name.split('.').pop()||'jpg';
+  const path=`${currentUser.id}/${new Date().toISOString().replace(/[:.]/g,'-')}_${tipo}.${ext}`;
+  const{error}=await sb.storage.from('fotos').upload(path,file,{upsert:true});
+  if(error){console.error(error);return null;}
+  return path;
+}
+
+// SALVAR DIA
+async function salvarDia(){
+  const peso=document.getElementById('pesoInput').value;
+  const abdomen=document.getElementById('abdomenInput').value;
+  const gordura=document.getElementById('gorduraInput').value;
+  const musculo=document.getElementById('musculoInput').value;
+  const agua=document.getElementById('aguaInput').value;
+  const metabolismo=document.getElementById('metabolismoInput').value;
+  const idadeCorporal=document.getElementById('idadeCorporalInput').value;
+  const hoje=editandoData||new Date().toISOString().split('T')[0];
+  editandoData=null;
+  document.getElementById('editandoBanner').style.display='none';
+  document.getElementById('btnSalvar').textContent='Salvar registro de hoje';
+
+  const regExistente=registros.find(r=>r.data===hoje);
+  const checks=regExistente?.checks||{};
+  const temAlgo=fotoRostoFile||fotoCorpoFile||peso||abdomen||gordura||musculo||agua||metabolismo||idadeCorporal||Object.values(checks).some(Boolean);
+  if(!temAlgo){toast('Adicione ao menos uma informação');return;}
+
+  showSaving(true);
+  document.getElementById('btnSalvar').textContent='Salvando...';
+  document.getElementById('btnSalvar').disabled=true;
+
+  // upload fotos
+  let foto_rosto=regExistente?.foto_rosto||null;
+  let foto_corpo=regExistente?.foto_corpo||null;
+  if(fotoRostoFile){const p=await uploadFoto(fotoRostoFile,'rosto');if(p)foto_rosto=p;}
+  if(fotoCorpoFile){const p=await uploadFoto(fotoCorpoFile,'corpo');if(p)foto_corpo=p;}
+
+  const reg={
+    user_id:currentUser.id,
+    data:hoje,
+    foto_rosto,
+    foto_corpo,
+    peso:peso?parseFloat(peso):(regExistente?.peso||null),
+    abdomen:abdomen?parseFloat(abdomen):(regExistente?.abdomen||null),
+    gordura:gordura?parseFloat(gordura):(regExistente?.gordura||null),
+    musculo:musculo?parseFloat(musculo):(regExistente?.musculo||null),
+    agua:agua?parseFloat(agua):(regExistente?.agua||null),
+    metabolismo:metabolismo?parseFloat(metabolismo):(regExistente?.metabolismo||null),
+    idade_corporal:idadeCorporal?parseFloat(idadeCorporal):(regExistente?.idade_corporal||null),
+    strava:ultimaAtividade||(regExistente?.strava||null),
+    checks,
+    imc:null
+  };
+  if(reg.peso&&perfil.altura){const altM=perfil.altura/100;reg.imc=Math.round((reg.peso/(altM*altM))*10)/10;}
+
+  const{data,error}=await sb.from('registros').upsert(reg,{onConflict:'user_id,data'}).select().single();
+  if(error){toast('Erro ao salvar: '+error.message);console.error(error);}
+  else{
+    if(data){
+      if(data.foto_rosto)data.fotoRostoUrl=await getFotoUrl(data.foto_rosto);
+      if(data.foto_corpo)data.fotoCorpoUrl=await getFotoUrl(data.foto_corpo);
+      const idx=registros.findIndex(r=>r.data===hoje);
+      if(idx>=0)registros[idx]=data;else registros.unshift(data);
+    }
+    clearPhoto('prevRosto','wrapRosto','fotoRosto');
+    clearPhoto('prevCorpo','wrapCorpo','fotoCorpo');
+    fotoRostoFile=null;fotoCorpoFile=null;
+    ['pesoInput','abdomenInput','gorduraInput','musculoInput','aguaInput','metabolismoInput','idadeCorporalInput'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('gaugeCard').style.display='none';
+    mostrarUltimoPeso();renderMetas();renderChecklist();
+    toast('Registro salvo na nuvem! ☁️ 💪');
+  }
+  showSaving(false);
+  document.getElementById('btnSalvar').textContent='Salvar registro de hoje';
+  document.getElementById('btnSalvar').disabled=false;
+}
+
+// FOTOS
 function loadPreview(input,imgId,wrapId){
   if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  if(imgId==='prevRosto')fotoRostoFile=file;
+  else fotoCorpoFile=file;
   const reader=new FileReader();
   reader.onload=e=>{document.getElementById(imgId).src=e.target.result;document.getElementById(wrapId).style.display='block';};
-  reader.readAsDataURL(input.files[0]);
+  reader.readAsDataURL(file);
 }
 function clearPhoto(imgId,wrapId,inputId){
   document.getElementById(imgId).src='';document.getElementById(wrapId).style.display='none';document.getElementById(inputId).value='';
+  if(imgId==='prevRosto')fotoRostoFile=null;else fotoCorpoFile=null;
+}
+
+// EDITAR
+function editarRegistro(data){
+  const reg=registros.find(r=>r.data===data);
+  if(!reg)return;
+  if(reg.peso)document.getElementById('pesoInput').value=reg.peso;
+  if(reg.abdomen)document.getElementById('abdomenInput').value=reg.abdomen;
+  if(reg.gordura)document.getElementById('gorduraInput').value=reg.gordura;
+  if(reg.musculo)document.getElementById('musculoInput').value=reg.musculo;
+  if(reg.agua)document.getElementById('aguaInput').value=reg.agua;
+  if(reg.metabolismo)document.getElementById('metabolismoInput').value=reg.metabolismo;
+  if(reg.idade_corporal)document.getElementById('idadeCorporalInput').value=reg.idade_corporal;
+  if(reg.fotoRostoUrl){document.getElementById('prevRosto').src=reg.fotoRostoUrl;document.getElementById('wrapRosto').style.display='block';}
+  if(reg.fotoCorpoUrl){document.getElementById('prevCorpo').src=reg.fotoCorpoUrl;document.getElementById('wrapCorpo').style.display='block';}
+  editandoData=data;
+  const dStr=new Date(data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  const banner=document.getElementById('editandoBanner');
+  banner.style.display='block';
+  banner.textContent=`✏️ Editando registro de ${dStr} — salve quando terminar`;
+  document.getElementById('btnSalvar').textContent=`Salvar edição de ${dStr}`;
+  calcularGauges();
+  showTab('registrar');
+  window.scrollTo(0,0);
+}
+
+async function deletarRegistro(data){
+  if(!confirm('Remover este registro?'))return;
+  const reg=registros.find(r=>r.data===data);
+  if(reg?.foto_rosto)await sb.storage.from('fotos').remove([reg.foto_rosto]);
+  if(reg?.foto_corpo)await sb.storage.from('fotos').remove([reg.foto_corpo]);
+  await sb.from('registros').delete().eq('user_id',currentUser.id).eq('data',data);
+  registros=registros.filter(r=>r.data!==data);
+  renderTimeline();calcularStreak();toast('Registro removido');
 }
 
 // STREAK
 function calcularStreak(){
-  if(!state.habitos.length){
-    document.getElementById('streakNum').textContent='--';
-    document.getElementById('streakLabel').textContent='configure seus hábitos';
-    document.getElementById('streakSub').textContent='';
-    document.getElementById('streakFire').textContent='💊';
-    return;
-  }
-  const sorted=[...state.registros].sort((a,b)=>b.data.localeCompare(a.data));
+  if(!perfil.habitos.length){document.getElementById('streakNum').textContent='--';document.getElementById('streakFire').textContent='💊';return;}
+  const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
   let streak=0;
   const hoje=new Date().toISOString().split('T')[0];
-  let dataVerif=new Date();
-  // verifica a partir de ontem se hoje não tiver completo ainda
   const regHoje=sorted.find(r=>r.data===hoje);
-  const hojeCompleto=regHoje&&state.habitos.length>0&&state.habitos.every((_,i)=>regHoje.checks&&regHoje.checks[i]);
-  if(!hojeCompleto) dataVerif.setDate(dataVerif.getDate()-1);
-
+  const hojeCompleto=regHoje&&perfil.habitos.every((_,i)=>regHoje.checks&&regHoje.checks[i]);
+  let dataVerif=new Date();
+  if(!hojeCompleto)dataVerif.setDate(dataVerif.getDate()-1);
   for(let i=0;i<365;i++){
-    const d=new Date(dataVerif);
-    d.setDate(d.getDate()-i);
+    const d=new Date(dataVerif);d.setDate(d.getDate()-i);
     const dStr=d.toISOString().split('T')[0];
     const reg=sorted.find(r=>r.data===dStr);
-    const completo=reg&&state.habitos.length>0&&state.habitos.every((_,idx)=>reg.checks&&reg.checks[idx]);
-    if(completo) streak++;
+    if(reg&&perfil.habitos.every((_,idx)=>reg.checks&&reg.checks[idx]))streak++;
     else break;
   }
-  if(hojeCompleto) streak=Math.max(streak,1);
-
+  if(hojeCompleto)streak=Math.max(streak,1);
   document.getElementById('streakNum').textContent=streak;
   document.getElementById('streakLabel').textContent=streak===1?'dia de sequência':'dias de sequência';
-  const fire=streak===0?'💊':streak<3?'🔥':streak<7?'🔥':streak<14?'🔥🔥':streak<30?'🔥🔥🔥':'🏆';
-  document.getElementById('streakFire').textContent=fire;
-  if(streak===0) document.getElementById('streakSub').textContent='Complete os hábitos hoje para começar!';
-  else if(hojeCompleto) document.getElementById('streakSub').textContent='Hábitos de hoje concluídos!';
-  else document.getElementById('streakSub').textContent='Complete os hábitos hoje para manter!';
+  document.getElementById('streakFire').textContent=streak===0?'💊':streak<7?'🔥':streak<14?'🔥🔥':streak<30?'🔥🔥🔥':'🏆';
+  document.getElementById('streakSub').textContent=hojeCompleto?'Hábitos de hoje concluídos! ✓':'Complete os hábitos hoje para manter!';
 }
 
-// REGRESSÃO LINEAR
-function regressaoLinear(pontos){
-  const n=pontos.length;
-  if(n<2)return null;
-  const sumX=pontos.reduce((s,p)=>s+p.x,0);
-  const sumY=pontos.reduce((s,p)=>s+p.y,0);
-  const sumXY=pontos.reduce((s,p)=>s+p.x*p.y,0);
-  const sumX2=pontos.reduce((s,p)=>s+p.x*p.x,0);
-  const denom=n*sumX2-sumX*sumX;
-  if(denom===0)return null;
-  return{slope:(n*sumXY-sumX*sumY)/denom,intercept:(sumY-sumX*(n*sumXY-sumX*sumY)/denom/n)};
-}
-
-function projetarMeta(registros,campo,meta){
-  if(registros.length<2)return{status:'poucos_dados'};
-  const sorted=[...registros].sort((a,b)=>a.data.localeCompare(b.data));
-  const dataInicio=new Date(sorted[0].data+'T12:00:00');
-  const pontos=sorted.map(r=>({x:Math.round((new Date(r.data+'T12:00:00')-dataInicio)/(864e5)),y:r[campo]}));
-  const reg=regressaoLinear(pontos);
-  if(!reg)return{status:'poucos_dados'};
-  const{slope,intercept}=reg;
-  const atual=pontos[pontos.length-1].y;
-  const inicio=pontos[0].y;
-  const precisaDiminuir=meta<inicio;
-  if(Math.abs(slope)<0.001)return{status:'estagnado',atual,inicio,meta};
-  if((precisaDiminuir&&slope>0)||(!precisaDiminuir&&slope<0))return{status:'regressao',atual,inicio,meta};
-  if(atual<=meta&&precisaDiminuir)return{status:'concluido',atual,meta};
-  if(atual>=meta&&!precisaDiminuir)return{status:'concluido',atual,meta};
-  const diasTotal=Math.round((meta-intercept)/slope);
-  const diasPassados=pontos[pontos.length-1].x;
-  const diasRestantes=Math.max(0,diasTotal-diasPassados);
-  const semanasRestantes=Math.ceil(diasRestantes/7);
-  const dataChegada=new Date();dataChegada.setDate(dataChegada.getDate()+diasRestantes);
-  const pctConcluido=Math.min(100,Math.max(0,Math.round(((inicio-atual)/(inicio-meta))*100)));
-  return{status:'ok',atual,inicio,meta,semanasRestantes,dataChegada,pctConcluido,taxaSemanal:Math.abs(slope*7)};
-}
-
-function renderMetaBloco(titulo,registros,campo,meta,unidade){
-  const proj=projetarMeta(registros,campo,meta);
-  const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
-  const atual=sorted.length?sorted[0][campo]:null;
-  let barPct=0,projecaoHtml='';
-  if(proj.status==='concluido'){barPct=100;projecaoHtml=`<div class="meta-projecao concluido">🎉 Meta atingida! Parabéns!</div>`;}
-  else if(proj.status==='poucos_dados'){projecaoHtml=`<div class="meta-projecao alerta">📊 Preciso de pelo menos 2 registros para projetar.</div>`;}
-  else if(proj.status==='estagnado'){barPct=proj.pctConcluido||0;projecaoHtml=`<div class="meta-projecao alerta">⚠️ Progresso estagnado. Hora de aumentar o ritmo!</div>`;}
-  else if(proj.status==='regressao'){projecaoHtml=`<div class="meta-projecao alerta">📈 Tendência contrária à meta. Foco!</div>`;}
-  else{barPct=proj.pctConcluido;const dataStr=proj.dataChegada.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});projecaoHtml=`<div class="meta-projecao destaque">🎯 <strong>${proj.semanasRestantes} semana${proj.semanasRestantes!==1?'s':''}</strong> para a meta · ${(proj.taxaSemanal).toFixed(1)}${unidade}/sem<br><span style="font-size:11px;font-weight:400;">Previsão: ${dataStr}</span></div>`;}
-  return`<div class="meta-header"><span class="meta-titulo">${titulo}</span><span class="meta-valores">${atual!=null?atual+unidade:'--'} → <strong>${meta}${unidade}</strong></span></div><div class="meta-bar-bg"><div class="meta-bar-fill" style="width:${barPct}%"></div></div><div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:right;">${barPct}% concluído</div>${projecaoHtml}`;
-}
-
-function renderMetas(){
-  const mc=document.getElementById('metaCard');
-  const pb=document.getElementById('metaPesoBlock');
-  const ab=document.getElementById('metaAbdBlock');
-  const gb=document.getElementById('metaGordBlock');
-  let show=false;
-  if(state.metaPeso){pb.style.display='block';pb.innerHTML=renderMetaBloco('⚖️ Meta de peso',state.registros.filter(r=>r.peso),'peso',state.metaPeso,'kg');show=true;}else pb.style.display='none';
-  if(state.metaAbd){ab.style.display='block';ab.innerHTML=renderMetaBloco('📏 Meta de cintura',state.registros.filter(r=>r.abdomen),'abdomen',state.metaAbd,'cm');show=true;}else ab.style.display='none';
-  if(state.metaGord){gb.style.display='block';gb.innerHTML=renderMetaBloco('🔥 Meta de gordura',state.registros.filter(r=>r.gordura),'gordura',state.metaGord,'%');show=true;}else gb.style.display='none';
-  mc.style.display=show?'block':'none';
-}
-
-// BALANÇA COMPOSIÇÃO
-function tagBalanca(val,tipo){
-  const configs={
-    gordura_M:[{max:6,l:'Essencial',c:'azul'},{max:13,l:'Atlético',c:'verde'},{max:17,l:'Fitness',c:'verde'},{max:25,l:'Médio',c:'amarelo'},{max:999,l:'Elevado',c:'vermelho'}],
-    gordura_F:[{max:14,l:'Essencial',c:'azul'},{max:20,l:'Atlético',c:'verde'},{max:24,l:'Fitness',c:'verde'},{max:32,l:'Médio',c:'amarelo'},{max:999,l:'Elevado',c:'vermelho'}],
-    musculo_M:[{max:40,l:'Baixa',c:'vermelho'},{max:44,l:'Normal',c:'amarelo'},{max:999,l:'Alta',c:'verde'}],
-    musculo_F:[{max:30,l:'Baixa',c:'vermelho'},{max:35,l:'Normal',c:'amarelo'},{max:999,l:'Alta',c:'verde'}],
-    agua:[{max:45,l:'Baixa',c:'vermelho'},{max:55,l:'Normal',c:'amarelo'},{max:999,l:'Ótima',c:'verde'}],
-  };
-  const tbl=configs[tipo]||[];
-  for(const r of tbl){if(val<=r.max)return{l:r.l,c:r.c};}
-  return{l:'--',c:'azul'};
-}
-
+// GAUGES
 function calcularGauges(){
   const peso=parseFloat(document.getElementById('pesoInput').value);
   const abd=parseFloat(document.getElementById('abdomenInput').value);
@@ -656,12 +728,10 @@ function calcularGauges(){
   const agua=parseFloat(document.getElementById('aguaInput').value);
   const metabolismo=parseFloat(document.getElementById('metabolismoInput').value);
   const idadeCorp=parseFloat(document.getElementById('idadeCorporalInput').value);
-  const alt=state.altura;
   let showGauge=false;
-
-  if(peso&&alt){
+  if(peso&&perfil.altura){
     showGauge=true;
-    const altM=alt/100,imc=peso/(altM*altM),imcR=(Math.round(imc*10)/10).toFixed(1);
+    const altM=perfil.altura/100,imc=peso/(altM*altM),imcR=(Math.round(imc*10)/10).toFixed(1);
     let cat,fraseT,fraseC,cor;
     if(imc<18.5){cat='Abaixo do peso';fraseT='Você está abaixo do peso ideal.';fraseC='azul';cor='#378ADD';}
     else if(imc<25){cat='Peso normal ✓';fraseT='No peso ideal! Agora é manter! 💪';fraseC='verde';cor='#1D9E75';}
@@ -670,222 +740,189 @@ function calcularGauges(){
     else if(imc<40){cat='Obesidade grau II';fraseT='O momento de mudar é agora.';fraseC='laranja';cor='#D85A30';}
     else{cat='Obesidade grau III';fraseT='Procure apoio médico e siga em frente.';fraseC='vermelho';cor='#A32D2D';}
     const pct=Math.min(100,Math.max(0,((imc-16)/(40-16))*100));
-    document.getElementById('imcValor').textContent=imcR;
-    document.getElementById('imcValor').style.color=cor;
-    document.getElementById('imcCat').textContent=cat;
-    document.getElementById('imcMarker').style.left=pct+'%';
-    document.getElementById('imcFrase').textContent=fraseT;
-    document.getElementById('imcFrase').className='gauge-frase frase-'+fraseC;
+    document.getElementById('imcValor').textContent=imcR;document.getElementById('imcValor').style.color=cor;
+    document.getElementById('imcCat').textContent=cat;document.getElementById('imcMarker').style.left=pct+'%';
+    document.getElementById('imcFrase').textContent=fraseT;document.getElementById('imcFrase').className='gauge-frase frase-'+fraseC;
   }
-
-  if(abd&&state.sexo){
-    showGauge=true;
-    document.getElementById('cinBlock').style.display='block';
-    const isM=state.sexo==='M';
-    const limites=isM?{ok:94,risco:102}:{ok:80,risco:88};
+  if(abd&&perfil.sexo){
+    showGauge=true;document.getElementById('cinBlock').style.display='block';
+    const isM=perfil.sexo==='M',limites=isM?{ok:94,risco:102}:{ok:80,risco:88};
     let catC,fraseTC,fraseCC,corC;
     if(abd<limites.ok){catC='Sem risco ✓';fraseTC='Cintura dentro do ideal!';fraseCC='verde';corC='#1D9E75';}
     else if(abd<limites.risco){catC='Risco aumentado';fraseTC='Atenção: acima do recomendado.';fraseCC='amarelo';corC='#EF9F27';}
     else{catC='Risco muito alto';fraseTC='Zona de risco cardiovascular!';fraseCC='vermelho';corC='#D85A30';}
     const min=isM?70:60,max=isM?130:110;
-    document.getElementById('cinValor').textContent=abd+'cm';
-    document.getElementById('cinValor').style.color=corC;
-    document.getElementById('cinCat').textContent=catC;
-    document.getElementById('cinMarker').style.left=Math.min(100,Math.max(0,((abd-min)/(max-min))*100))+'%';
-    document.getElementById('cinFrase').textContent=fraseTC;
-    document.getElementById('cinFrase').className='gauge-frase frase-'+fraseCC;
-    document.getElementById('cinMin').textContent=min;
-    document.getElementById('cinMid').textContent=isM?'94/102':'80/88';
-    document.getElementById('cinMax').textContent=max;
+    document.getElementById('cinValor').textContent=abd+'cm';document.getElementById('cinValor').style.color=corC;
+    document.getElementById('cinCat').textContent=catC;document.getElementById('cinMarker').style.left=Math.min(100,Math.max(0,((abd-min)/(max-min))*100))+'%';
+    document.getElementById('cinFrase').textContent=fraseTC;document.getElementById('cinFrase').className='gauge-frase frase-'+fraseCC;
+    document.getElementById('cinMin').textContent=min;document.getElementById('cinMid').textContent=isM?'94/102':'80/88';document.getElementById('cinMax').textContent=max;
   }else{document.getElementById('cinBlock').style.display='none';}
-
-  // composição corporal preview
   const balancaItems=[];
-  if(gordura){const t=tagBalanca(gordura,`gordura_${state.sexo||'M'}`);balancaItems.push({v:gordura+'%',l:'Gordura',t});}
-  if(musculo){const t=tagBalanca(musculo,`musculo_${state.sexo||'M'}`);balancaItems.push({v:musculo+'%',l:'Músculo',t});}
+  if(gordura){const t=tagBalanca(gordura,`gordura_${perfil.sexo||'M'}`);balancaItems.push({v:gordura+'%',l:'Gordura',t});}
+  if(musculo){const t=tagBalanca(musculo,`musculo_${perfil.sexo||'M'}`);balancaItems.push({v:musculo+'%',l:'Músculo',t});}
   if(agua){const t=tagBalanca(agua,'agua');balancaItems.push({v:agua+'%',l:'Água',t});}
-  if(metabolismo){balancaItems.push({v:metabolismo+' kcal',l:'Met. basal',t:{l:'Info',c:'azul'}});}
-  if(idadeCorp&&state.idade){
-    const dif=idadeCorp-state.idade;
-    const tagC=dif<=0?'verde':dif<=5?'amarelo':'vermelho';
-    const tagL=dif<=0?'Ótimo':dif<=5?'Atenção':'Elevada';
-    balancaItems.push({v:idadeCorp+' anos',l:'Idade corporal',t:{l:tagL,c:tagC}});
-  }else if(idadeCorp){balancaItems.push({v:idadeCorp+' anos',l:'Idade corporal',t:{l:'Info',c:'azul'}});}
-
+  if(metabolismo)balancaItems.push({v:metabolismo+' kcal',l:'Met. basal',t:{l:'Info',c:'azul'}});
+  if(idadeCorp&&perfil.idade){const dif=idadeCorp-perfil.idade;balancaItems.push({v:idadeCorp+' anos',l:'Idade corporal',t:{l:dif<=0?'Ótimo':dif<=5?'Atenção':'Elevada',c:dif<=0?'verde':dif<=5?'amarelo':'vermelho'}});}
+  else if(idadeCorp)balancaItems.push({v:idadeCorp+' anos',l:'Idade corporal',t:{l:'Info',c:'azul'}});
   if(balancaItems.length){
-    showGauge=true;
-    document.getElementById('balancaPreview').style.display='block';
-    document.getElementById('balancaPreviewGrid').innerHTML=balancaItems.map(b=>`
-      <div class="balanca-item">
-        <div class="balanca-val">${b.v}</div>
-        <div class="balanca-lbl">${b.l}</div>
-        <span class="balanca-tag tag-${b.t.c}">${b.t.l}</span>
-      </div>`).join('');
+    showGauge=true;document.getElementById('balancaPreview').style.display='block';
+    document.getElementById('balancaPreviewGrid').innerHTML=balancaItems.map(b=>`<div class="balanca-item"><div class="balanca-val">${b.v}</div><div class="balanca-lbl">${b.l}</div><span class="balanca-tag tag-${b.t.c}">${b.t.l}</span></div>`).join('');
   }else{document.getElementById('balancaPreview').style.display='none';}
-
   document.getElementById('gaugeCard').style.display=showGauge?'block':'none';
 }
 
-function salvarAltura(){const v=parseFloat(document.getElementById('alturaConfig').value);if(v>=100&&v<=250){state.altura=v;salvarState();}}
-function salvarSexo(){state.sexo=document.getElementById('sexoConfig').value;salvarState();}
-function salvarIdade(){const v=parseInt(document.getElementById('idadeConfig').value);if(v>=10&&v<=100){state.idade=v;salvarState();}}
-function salvarMetas(){
-  const p=parseFloat(document.getElementById('metaPesoConfig').value);
-  const a=parseFloat(document.getElementById('metaAbdConfig').value);
-  const g=parseFloat(document.getElementById('metaGordConfig').value);
-  state.metaPeso=p>0?p:null;state.metaAbd=a>0?a:null;state.metaGord=g>0?g:null;
-  salvarState();renderMetas();
+function tagBalanca(val,tipo){
+  const configs={gordura_M:[{max:6,l:'Essencial',c:'azul'},{max:13,l:'Atlético',c:'verde'},{max:17,l:'Fitness',c:'verde'},{max:25,l:'Médio',c:'amarelo'},{max:999,l:'Elevado',c:'vermelho'}],gordura_F:[{max:14,l:'Essencial',c:'azul'},{max:20,l:'Atlético',c:'verde'},{max:24,l:'Fitness',c:'verde'},{max:32,l:'Médio',c:'amarelo'},{max:999,l:'Elevado',c:'vermelho'}],musculo_M:[{max:40,l:'Baixa',c:'vermelho'},{max:44,l:'Normal',c:'amarelo'},{max:999,l:'Alta',c:'verde'}],musculo_F:[{max:30,l:'Baixa',c:'vermelho'},{max:35,l:'Normal',c:'amarelo'},{max:999,l:'Alta',c:'verde'}],agua:[{max:45,l:'Baixa',c:'vermelho'},{max:55,l:'Normal',c:'amarelo'},{max:999,l:'Ótima',c:'verde'}]};
+  const tbl=configs[tipo]||[];
+  for(const r of tbl)if(val<=r.max)return{l:r.l,c:r.c};
+  return{l:'--',c:'azul'};
+}
+
+// METAS
+function regressaoLinear(pontos){
+  const n=pontos.length;if(n<2)return null;
+  const sumX=pontos.reduce((s,p)=>s+p.x,0),sumY=pontos.reduce((s,p)=>s+p.y,0);
+  const sumXY=pontos.reduce((s,p)=>s+p.x*p.y,0),sumX2=pontos.reduce((s,p)=>s+p.x*p.x,0);
+  const denom=n*sumX2-sumX*sumX;if(denom===0)return null;
+  return{slope:(n*sumXY-sumX*sumY)/denom,intercept:(sumY-sumX*(n*sumXY-sumX*sumY)/denom/n)};
+}
+function projetarMeta(regs,campo,meta){
+  if(regs.length<2)return{status:'poucos_dados'};
+  const sorted=[...regs].sort((a,b)=>a.data.localeCompare(b.data));
+  const dataInicio=new Date(sorted[0].data+'T12:00:00');
+  const pontos=sorted.map(r=>({x:Math.round((new Date(r.data+'T12:00:00')-dataInicio)/(864e5)),y:r[campo]}));
+  const reg=regressaoLinear(pontos);if(!reg)return{status:'poucos_dados'};
+  const{slope,intercept}=reg,atual=pontos[pontos.length-1].y,inicio=pontos[0].y;
+  const precisaDiminuir=meta<inicio;
+  if(Math.abs(slope)<0.001)return{status:'estagnado'};
+  if((precisaDiminuir&&slope>0)||(!precisaDiminuir&&slope<0))return{status:'regressao'};
+  if((precisaDiminuir&&atual<=meta)||(!precisaDiminuir&&atual>=meta))return{status:'concluido',atual,meta};
+  const diasRestantes=Math.max(0,Math.round((meta-intercept)/slope)-pontos[pontos.length-1].x);
+  const semanasRestantes=Math.ceil(diasRestantes/7);
+  const dataChegada=new Date();dataChegada.setDate(dataChegada.getDate()+diasRestantes);
+  const pctConcluido=Math.min(100,Math.max(0,Math.round(((inicio-atual)/(inicio-meta))*100)));
+  return{status:'ok',atual,inicio,meta,semanasRestantes,dataChegada,pctConcluido,taxaSemanal:Math.abs(slope*7)};
+}
+function renderMetaBloco(titulo,regs,campo,meta,unidade){
+  const proj=projetarMeta(regs,campo,meta);
+  const sorted=[...regs].sort((a,b)=>b.data.localeCompare(a.data));
+  const atual=sorted.length?sorted[0][campo]:null;
+  let barPct=0,projecaoHtml='';
+  if(proj.status==='concluido'){barPct=100;projecaoHtml=`<div class="meta-projecao concluido">🎉 Meta atingida! Parabéns!</div>`;}
+  else if(proj.status==='poucos_dados'){projecaoHtml=`<div class="meta-projecao alerta">📊 Preciso de pelo menos 2 registros para projetar.</div>`;}
+  else if(proj.status==='estagnado'){projecaoHtml=`<div class="meta-projecao alerta">⚠️ Progresso estagnado. Hora de aumentar o ritmo!</div>`;}
+  else if(proj.status==='regressao'){projecaoHtml=`<div class="meta-projecao alerta">📈 Tendência contrária à meta. Foco!</div>`;}
+  else{barPct=proj.pctConcluido;const dataStr=proj.dataChegada.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});projecaoHtml=`<div class="meta-projecao destaque">🎯 <strong>${proj.semanasRestantes} semana${proj.semanasRestantes!==1?'s':''}</strong> para a meta · ${proj.taxaSemanal.toFixed(1)}${unidade}/sem<br><span style="font-size:11px;font-weight:400;">Previsão: ${dataStr}</span></div>`;}
+  return`<div class="meta-header"><span class="meta-titulo">${titulo}</span><span class="meta-valores">${atual!=null?atual+unidade:'--'} → <strong>${meta}${unidade}</strong></span></div><div class="meta-bar-bg"><div class="meta-bar-fill" style="width:${barPct}%"></div></div><div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:right;">${barPct}% concluído</div>${projecaoHtml}`;
+}
+function renderMetas(){
+  const mc=document.getElementById('metaCard');
+  const pb=document.getElementById('metaPesoBlock'),ab=document.getElementById('metaAbdBlock'),gb=document.getElementById('metaGordBlock');
+  let show=false;
+  if(perfil.meta_peso){pb.style.display='block';pb.innerHTML=renderMetaBloco('⚖️ Meta de peso',registros.filter(r=>r.peso),'peso',perfil.meta_peso,'kg');show=true;}else pb.style.display='none';
+  if(perfil.meta_abd){ab.style.display='block';ab.innerHTML=renderMetaBloco('📏 Meta de cintura',registros.filter(r=>r.abdomen),'abdomen',perfil.meta_abd,'cm');show=true;}else ab.style.display='none';
+  if(perfil.meta_gord){gb.style.display='block';gb.innerHTML=renderMetaBloco('🔥 Meta de gordura',registros.filter(r=>r.gordura),'gordura',perfil.meta_gord,'%');show=true;}else gb.style.display='none';
+  mc.style.display=show?'block':'none';
 }
 
 // CHECKLIST
 function renderChecklist(){
   const wrap=document.getElementById('checklistWrap');
-  if(!state.habitos.length){wrap.innerHTML='<p style="font-size:13px;color:#aaa;">Nenhum hábito cadastrado. Adicione em Config.</p>';calcularStreak();return;}
+  if(!perfil.habitos.length){wrap.innerHTML='<p style="font-size:13px;color:#aaa;">Nenhum hábito cadastrado. Adicione em Config.</p>';calcularStreak();return;}
   const hoje=new Date().toISOString().split('T')[0];
-  const regHoje=state.registros.find(r=>r.data===hoje);
+  const regHoje=registros.find(r=>r.data===hoje);
   const checked=regHoje?.checks||{};
-  wrap.innerHTML=state.habitos.map((h,i)=>{
+  wrap.innerHTML=perfil.habitos.map((h,i)=>{
     const isChecked=!!checked[i];
     return`<div class="check-item ${isChecked?'checked':''}" onclick="toggleCheck(${i})">
       <input type="checkbox" ${isChecked?'checked':''} onclick="event.stopPropagation();toggleCheck(${i})">
       <label>${h}</label>
     </div>`;
   }).join('');
-  atualizarProgressoCheck();
-  calcularStreak();
+  atualizarProgressoCheck();calcularStreak();
 }
 
-function toggleCheck(idx){
+async function toggleCheck(idx){
   const hoje=new Date().toISOString().split('T')[0];
-  let regHoje=state.registros.find(r=>r.data===hoje);
-  if(!regHoje){regHoje={data:hoje,fotoRosto:null,fotoCorpo:null,peso:null,abdomen:null,gordura:null,musculo:null,agua:null,metabolismo:null,idadeCorporal:null,strava:null,checks:{}};state.registros.unshift(regHoje);}
+  let regHoje=registros.find(r=>r.data===hoje);
+  if(!regHoje){
+    const{data}=await sb.from('registros').upsert({user_id:currentUser.id,data:hoje,checks:{}},{onConflict:'user_id,data'}).select().single();
+    if(data){registros.unshift(data);regHoje=data;}
+  }
   if(!regHoje.checks)regHoje.checks={};
   regHoje.checks[idx]=!regHoje.checks[idx];
-  salvarState();renderChecklist();
+  await sb.from('registros').update({checks:regHoje.checks}).eq('user_id',currentUser.id).eq('data',hoje);
+  renderChecklist();
 }
 
 function atualizarProgressoCheck(){
   const hoje=new Date().toISOString().split('T')[0];
-  const regHoje=state.registros.find(r=>r.data===hoje);
+  const regHoje=registros.find(r=>r.data===hoje);
   const checked=regHoje?.checks||{};
-  const total=state.habitos.length;
-  const feitos=Object.values(checked).filter(Boolean).length;
+  const total=perfil.habitos.length,feitos=Object.values(checked).filter(Boolean).length;
   const pct=total?Math.round((feitos/total)*100):0;
   document.getElementById('checkBar').style.width=pct+'%';
   document.getElementById('checkCount').textContent=`${feitos} de ${total} concluídos`;
 }
 
+async function adicionarHabito(){
+  const input=document.getElementById('novoHabitoInput'),val=input.value.trim();
+  if(!val){toast('Digite o nome do hábito');return;}
+  perfil.habitos.push(val);
+  await sb.from('perfis').update({habitos:perfil.habitos}).eq('id',currentUser.id);
+  input.value='';renderHabitosConfig();renderChecklist();toast('Hábito adicionado!');
+}
+async function removerHabito(idx){
+  perfil.habitos.splice(idx,1);
+  await sb.from('perfis').update({habitos:perfil.habitos}).eq('id',currentUser.id);
+  renderHabitosConfig();renderChecklist();toast('Hábito removido');
+}
 function renderHabitosConfig(){
   const list=document.getElementById('habitosListConfig');
-  if(!state.habitos.length){list.innerHTML='<p style="font-size:13px;color:#aaa;padding:8px 0;">Nenhum hábito cadastrado.</p>';return;}
-  list.innerHTML=state.habitos.map((h,i)=>`<div class="habito-item"><span>${h}</span><button class="habito-del" onclick="removerHabito(${i})">✕</button></div>`).join('');
+  if(!perfil.habitos.length){list.innerHTML='<p style="font-size:13px;color:#aaa;padding:8px 0;">Nenhum hábito cadastrado.</p>';return;}
+  list.innerHTML=perfil.habitos.map((h,i)=>`<div class="habito-item"><span>${h}</span><button class="habito-del" onclick="removerHabito(${i})">✕</button></div>`).join('');
 }
-function adicionarHabito(){
-  const input=document.getElementById('novoHabitoInput');const val=input.value.trim();
-  if(!val){toast('Digite o nome do hábito');return;}
-  state.habitos.push(val);salvarState();input.value='';renderHabitosConfig();renderChecklist();toast('Hábito adicionado!');
-}
-function removerHabito(idx){state.habitos.splice(idx,1);salvarState();renderHabitosConfig();renderChecklist();toast('Hábito removido');}
 
 function mostrarUltimoPeso(){
-  const comPeso=[...state.registros.filter(r=>r.peso)].sort((a,b)=>b.data.localeCompare(a.data));
+  const comPeso=[...registros.filter(r=>r.peso)].sort((a,b)=>b.data.localeCompare(a.data));
   if(!comPeso.length)return;
   const d=new Date(comPeso[0].data+'T12:00:00');
   document.getElementById('ultimoPesoInfo').textContent=`Último: ${comPeso[0].peso}kg em ${d.toLocaleDateString('pt-BR',{day:'numeric',month:'short'})}`;
 }
 
-function salvarDia(){
-  const fotoR=document.getElementById('prevRosto').src;
-  const fotoC=document.getElementById('prevCorpo').src;
-  const peso=document.getElementById('pesoInput').value;
-  const abdomen=document.getElementById('abdomenInput').value;
-  const gordura=document.getElementById('gorduraInput').value;
-  const musculo=document.getElementById('musculoInput').value;
-  const agua=document.getElementById('aguaInput').value;
-  const metabolismo=document.getElementById('metabolismoInput').value;
-  const idadeCorporal=document.getElementById('idadeCorporalInput').value;
-  // se estiver editando um registro antigo, usa aquela data
-  const hoje=state._editandoData||new Date().toISOString().split('T')[0];
-  state._editandoData=null;
-
-  // busca registro existente do dia para MESCLAR (nunca sobrescrever)
-  const idx=state.registros.findIndex(r=>r.data===hoje);
-  const existente=idx>=0?state.registros[idx]:{data:hoje,fotoRosto:null,fotoCorpo:null,peso:null,abdomen:null,gordura:null,musculo:null,agua:null,metabolismo:null,idadeCorporal:null,strava:null,checks:{},imc:null};
-
-  const temAlgo=(fotoR&&fotoR.startsWith('data:'))||(fotoC&&fotoC.startsWith('data:'))||peso||abdomen||gordura||musculo||agua||metabolismo||idadeCorporal||Object.values(existente.checks||{}).some(Boolean);
-  if(!temAlgo){toast('Adicione ao menos uma informação');return;}
-
-  // MESCLA: só atualiza campos que foram preenchidos agora, preserva o resto
-  const reg={
-    ...existente,
-    // fotos: só substitui se uma nova foi tirada, senão mantém a existente
-    fotoRosto:(fotoR&&fotoR.startsWith('data:'))?fotoR:existente.fotoRosto,
-    fotoCorpo:(fotoC&&fotoC.startsWith('data:'))?fotoC:existente.fotoCorpo,
-    // medidas: só substitui se preenchido agora, senão mantém
-    peso:peso?parseFloat(peso):existente.peso,
-    abdomen:abdomen?parseFloat(abdomen):existente.abdomen,
-    gordura:gordura?parseFloat(gordura):existente.gordura,
-    musculo:musculo?parseFloat(musculo):existente.musculo,
-    agua:agua?parseFloat(agua):existente.agua,
-    metabolismo:metabolismo?parseFloat(metabolismo):existente.metabolismo,
-    idadeCorporal:idadeCorporal?parseFloat(idadeCorporal):existente.idadeCorporal,
-    strava:state.ultimaAtividade||existente.strava,
-  };
-
-  if(reg.peso&&state.altura){const altM=state.altura/100;reg.imc=Math.round((reg.peso/(altM*altM))*10)/10;}
-
-  if(idx>=0)state.registros[idx]=reg;else state.registros.unshift(reg);
-  salvarState();
-  clearPhoto('prevRosto','wrapRosto','fotoRosto');
-  clearPhoto('prevCorpo','wrapCorpo','fotoCorpo');
-  ['pesoInput','abdomenInput','gorduraInput','musculoInput','aguaInput','metabolismoInput','idadeCorporalInput'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('gaugeCard').style.display='none';
-  mostrarUltimoPeso();renderMetas();renderChecklist();
-  toast('Registro salvo! 💪');
-}
-
+// TIMELINE
 function renderTimeline(){
-  const list=document.getElementById('timelineList');
-  const resumoCard=document.getElementById('resumoCard');
-  if(!state.registros.length){list.innerHTML='<div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div>';resumoCard.style.display='none';return;}
-  const comPeso=[...state.registros.filter(r=>r.peso)].sort((a,b)=>a.data.localeCompare(b.data));
+  const list=document.getElementById('timelineList'),resumoCard=document.getElementById('resumoCard');
+  if(!registros.length){list.innerHTML='<div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div>';resumoCard.style.display='none';return;}
+  const comPeso=[...registros.filter(r=>r.peso)].sort((a,b)=>a.data.localeCompare(b.data));
   if(comPeso.length>=2){
     resumoCard.style.display='block';
     const primeiro=comPeso[0],ultimo=comPeso[comPeso.length-1];
-    const dif=(ultimo.peso-primeiro.peso).toFixed(1);const difN=parseFloat(dif);
-    const comGord=[...state.registros.filter(r=>r.gordura)].sort((a,b)=>a.data.localeCompare(b.data));
-    let gordH='';
-    if(comGord.length>=2){const dg=(comGord[comGord.length-1].gordura-comGord[0].gordura).toFixed(1);gordH=`<div class="metric"><div class="val ${parseFloat(dg)<=0?'green':'red'}">${parseFloat(dg)>0?'+':''}${dg}%</div><div class="lbl">gordura</div></div>`;}
+    const dif=(ultimo.peso-primeiro.peso).toFixed(1),difN=parseFloat(dif);
     document.getElementById('resumoMetrics').innerHTML=`
       <div class="metric"><div class="val">${primeiro.peso}kg</div><div class="lbl">peso inicial</div></div>
       <div class="metric"><div class="val">${ultimo.peso}kg</div><div class="lbl">peso atual</div></div>
       <div class="metric"><div class="val ${difN<=0?'green':'red'}">${difN>0?'+':''}${dif}kg</div><div class="lbl">variação</div></div>
-      <div class="metric"><div class="val">${state.registros.length}</div><div class="lbl">dias</div></div>
-      ${gordH}`;
-  }else{resumoCard.style.display='none';}
-  const sorted=[...state.registros].sort((a,b)=>b.data.localeCompare(a.data));
+      <div class="metric"><div class="val">${registros.length}</div><div class="lbl">dias</div></div>`;
+  }else resumoCard.style.display='none';
+
+  const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
   list.innerHTML=sorted.map((r,i)=>{
     const prox=sorted.slice(i+1);
     const d=new Date(r.data+'T12:00:00');
     const label=d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
     const isHoje=r.data===new Date().toISOString().split('T')[0];
-    let pesoH='',gordH='',abdH='',compH='';
+    let pesoH='',abdH='',compH='';
     if(r.peso){const prev=prox.find(x=>x.peso);const dif=prev?((r.peso-prev.peso).toFixed(1)):'';pesoH=`<div class="entry-row">⚖️ <strong>${r.peso}kg</strong>${r.imc?` · IMC ${r.imc}`:''}${dif?` <span class="${parseFloat(dif)>0?'dif-neg':'dif-pos'}">${parseFloat(dif)>0?'+':''}${dif}kg</span>`:''}</div>`;}
     if(r.abdomen){const prev=prox.find(x=>x.abdomen);const dif=prev?((r.abdomen-prev.abdomen).toFixed(1)):'';abdH=`<div class="entry-row">📏 Cintura: <strong>${r.abdomen}cm</strong>${dif?` <span class="${parseFloat(dif)>0?'dif-neg':'dif-pos'}">${parseFloat(dif)>0?'+':''}${dif}cm</span>`:''}</div>`;}
-    if(r.gordura||r.musculo||r.agua){
-      const parts=[];
-      if(r.gordura)parts.push(`🔥 ${r.gordura}%`);
-      if(r.musculo)parts.push(`💪 ${r.musculo}%`);
-      if(r.agua)parts.push(`💧 ${r.agua}%`);
-      compH=`<div class="entry-row" style="color:#888;">${parts.join(' · ')}</div>`;
-    }
-    const fotos=[r.fotoRosto,r.fotoCorpo].filter(Boolean);
+    if(r.gordura||r.musculo||r.agua){const parts=[];if(r.gordura)parts.push(`🔥 ${r.gordura}%`);if(r.musculo)parts.push(`💪 ${r.musculo}%`);if(r.agua)parts.push(`💧 ${r.agua}%`);compH=`<div class="entry-row" style="color:#888;">${parts.join(' · ')}</div>`;}
     const checks=r.checks||{};
-    const checksPills=state.habitos.map((h,idx)=>`<span class="check-pill ${checks[idx]?'ok':'no'}">${h}</span>`).join('');
+    const checksPills=perfil.habitos.map((h,idx)=>`<span class="check-pill ${checks[idx]?'ok':'no'}">${h}</span>`).join('');
+    const fotos=[r.fotoRostoUrl,r.fotoCorpoUrl].filter(Boolean);
     return`<div class="entry-card">
       <div class="entry-header">
         <span class="entry-date">${isHoje?'Hoje — ':''}${label}</span>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div class="entry-actions">
           <button class="entry-edit" onclick="editarRegistro('${r.data}')" title="Editar">✏️</button>
           <button class="entry-del" onclick="deletarRegistro('${r.data}')">✕</button>
         </div>
@@ -893,63 +930,30 @@ function renderTimeline(){
       ${fotos.length?`<div class="entry-photos">${fotos.map(f=>`<img src="${f}" onclick="openModal('${f}')" alt="foto">`).join('')}</div>`:''}
       ${pesoH}${abdH}${compH}
       ${r.strava?`<div class="entry-strava">🏃 ${r.strava}</div>`:''}
-      ${state.habitos.length?`<div class="entry-checks">${checksPills}</div>`:''}
+      ${perfil.habitos.length?`<div class="entry-checks">${checksPills}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function editarRegistro(data){
-  const reg=state.registros.find(r=>r.data===data);
-  if(!reg)return;
-  // carrega dados nos campos da aba Hoje
-  if(reg.peso)document.getElementById('pesoInput').value=reg.peso;
-  if(reg.abdomen)document.getElementById('abdomenInput').value=reg.abdomen;
-  if(reg.gordura)document.getElementById('gorduraInput').value=reg.gordura;
-  if(reg.musculo)document.getElementById('musculoInput').value=reg.musculo;
-  if(reg.agua)document.getElementById('aguaInput').value=reg.agua;
-  if(reg.metabolismo)document.getElementById('metabolismoInput').value=reg.metabolismo;
-  if(reg.idadeCorporal)document.getElementById('idadeCorporalInput').value=reg.idadeCorporal;
-  // carrega fotos
-  if(reg.fotoRosto){document.getElementById('prevRosto').src=reg.fotoRosto;document.getElementById('wrapRosto').style.display='block';}
-  if(reg.fotoCorpo){document.getElementById('prevCorpo').src=reg.fotoCorpo;document.getElementById('wrapCorpo').style.display='block';}
-  // se for um dia anterior, ajusta temporariamente a data de salvamento
-  if(data!==new Date().toISOString().split('T')[0]){
-    state._editandoData=data;
-    toast(`Editando registro de ${new Date(data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'})} — salve quando terminar`,4000);
-  } else {
-    state._editandoData=null;
-    toast('Dados carregados — edite e salve',3000);
-  }
-  calcularGauges();
-  showTab('registrar');
-}
-
-function deletarRegistro(data){
-  if(!confirm('Remover este registro?'))return;
-  state.registros=state.registros.filter(r=>r.data!==data);
-  salvarState();renderTimeline();calcularStreak();toast('Registro removido');
-}
-
+// COMPARAR
 function renderCompareSelects(){
-  const sorted=[...state.registros].sort((a,b)=>b.data.localeCompare(a.data));
+  const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
   const opts=sorted.map(r=>{const d=new Date(r.data+'T12:00:00');return`<option value="${r.data}">${d.toLocaleDateString('pt-BR',{day:'numeric',month:'short',year:'2-digit'})}</option>`;}).join('');
   document.getElementById('cmpA').innerHTML='<option value="">Data A</option>'+opts;
   document.getElementById('cmpB').innerHTML='<option value="">Data B</option>'+opts;
   renderCompare();
 }
-
 function renderCompare(){
   const va=document.getElementById('cmpA').value,vb=document.getElementById('cmpB').value;
-  const a=state.registros.find(r=>r.data===va),b=state.registros.find(r=>r.data===vb);
+  const a=registros.find(r=>r.data===va),b=registros.find(r=>r.data===vb);
   const el=document.getElementById('compareResult');
   if(!a||!b){el.innerHTML='<p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p>';return;}
   const da=new Date(a.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
   const db=new Date(b.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
-  const fA=a.fotoCorpo||a.fotoRosto,fB=b.fotoCorpo||b.fotoRosto;
+  const fA=a.fotoCorpoUrl||a.fotoRostoUrl,fB=b.fotoCorpoUrl||b.fotoRostoUrl;
   let difH='';
   if(a.peso&&b.peso){const dif=(a.peso-b.peso).toFixed(1);difH+=`<p style="text-align:center;margin-top:10px;font-size:14px;">⚖️ <span class="${parseFloat(dif)<=0?'dif-pos':'dif-neg'}">${parseFloat(dif)>0?'+':''}${dif}kg</span></p>`;}
   if(a.abdomen&&b.abdomen){const dif=(a.abdomen-b.abdomen).toFixed(1);difH+=`<p style="text-align:center;margin-top:4px;font-size:14px;">📏 <span class="${parseFloat(dif)<=0?'dif-pos':'dif-neg'}">${parseFloat(dif)>0?'+':''}${dif}cm cintura</span></p>`;}
-  if(a.gordura&&b.gordura){const dif=(a.gordura-b.gordura).toFixed(1);difH+=`<p style="text-align:center;margin-top:4px;font-size:14px;">🔥 <span class="${parseFloat(dif)<=0?'dif-pos':'dif-neg'}">${parseFloat(dif)>0?'+':''}${dif}% gordura</span></p>`;}
   el.innerHTML=`<div class="compare-grid">
     <div class="compare-col">${fA?`<img src="${fA}" onclick="openModal('${fA}')" alt="A">`:'<div class="no-foto">sem foto</div>'}<p>${da}${a.peso?` · ${a.peso}kg`:''}${a.imc?` · IMC ${a.imc}`:''}</p></div>
     <div class="compare-col">${fB?`<img src="${fB}" onclick="openModal('${fB}')" alt="B">`:'<div class="no-foto">sem foto</div>'}<p>${db}${b.peso?` · ${b.peso}kg`:''}${b.imc?` · IMC ${b.imc}`:''}</p></div>
@@ -959,143 +963,90 @@ function renderCompare(){
 function openModal(src){document.getElementById('modalImg').src=src;document.getElementById('modalBg').classList.add('open');}
 function closeModal(){document.getElementById('modalBg').classList.remove('open');}
 
+function showTab(tab){
+  ['registrar','timeline','comparar','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','config'][i]===tab);});
+  if(tab==='timeline')renderTimeline();
+  if(tab==='comparar')renderCompareSelects();
+  if(tab==='config')carregarConfig();
+}
+
 // STRAVA
 function connectStrava(){
   const si=document.getElementById('clientSecretInput').value;
-  if(si&&!si.startsWith('•')){state.clientSecret=si.trim();salvarState();}
-  if(!state.clientSecret){toast('Cole o Client Secret em Config antes de conectar',3500);showTab('config');return;}
-  window.location.href=`https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&approval_prompt=force&scope=activity:read_all`;
+  if(si&&!si.startsWith('•')){perfil.strava_client_secret=si.trim();sb.from('perfis').update({strava_client_secret:perfil.strava_client_secret}).eq('id',currentUser.id);}
+  if(!perfil.strava_client_secret){toast('Cole o Client Secret antes de conectar',3500);return;}
+  const redirect=window.location.href.split('?')[0].split('#')[0];
+  window.location.href=`https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(redirect)}&approval_prompt=force&scope=activity:read_all`;
 }
 async function trocarCode(code){
-  if(!state.clientSecret){toast('Client Secret não encontrado.',3500);return;}
+  if(!perfil.strava_client_secret)return;
   toast('Conectando ao Strava...',4000);
   try{
-    const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:CLIENT_ID,client_secret:state.clientSecret,code,grant_type:'authorization_code'})});
+    const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:CLIENT_ID,client_secret:perfil.strava_client_secret,code,grant_type:'authorization_code'})});
     const d=await r.json();
-    if(d.access_token){state.token=d.access_token;state.refreshToken=d.refresh_token;state.tokenExpiry=d.expires_at;salvarState();atualizarUIStrava(true);await syncStrava();toast('Strava conectado! ✓');window.history.replaceState({},document.title,REDIRECT_URI);}
-    else toast('Erro: '+(d.message||'verifique o Client Secret'));
+    if(d.access_token){
+      perfil.strava_token=d.access_token;perfil.strava_refresh_token=d.refresh_token;perfil.strava_token_expiry=d.expires_at;
+      await sb.from('perfis').update({strava_token:d.access_token,strava_refresh_token:d.refresh_token,strava_token_expiry:d.expires_at}).eq('id',currentUser.id);
+      atualizarUIStrava(true);await syncStrava();toast('Strava conectado! ✓');
+      window.history.replaceState({},document.title,window.location.href.split('?')[0]);
+    }else toast('Erro: '+(d.message||'verifique o Client Secret'));
   }catch(e){toast('Erro ao conectar com o Strava');}
 }
-async function refreshTokenSeNecessario(){
-  if(!state.token||!state.refreshToken||!state.clientSecret)return false;
-  if(state.tokenExpiry-Math.floor(Date.now()/1000)>1800)return true;
+async function refreshStravaToken(){
+  if(!perfil.strava_token||!perfil.strava_refresh_token||!perfil.strava_client_secret)return false;
+  if(perfil.strava_token_expiry-Math.floor(Date.now()/1000)>1800)return true;
   try{
-    const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:CLIENT_ID,client_secret:state.clientSecret,refresh_token:state.refreshToken,grant_type:'refresh_token'})});
+    const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:CLIENT_ID,client_secret:perfil.strava_client_secret,refresh_token:perfil.strava_refresh_token,grant_type:'refresh_token'})});
     const d=await r.json();
-    if(d.access_token){state.token=d.access_token;state.refreshToken=d.refresh_token;state.tokenExpiry=d.expires_at;salvarState();return true;}
+    if(d.access_token){perfil.strava_token=d.access_token;perfil.strava_refresh_token=d.refresh_token;perfil.strava_token_expiry=d.expires_at;await sb.from('perfis').update({strava_token:d.access_token,strava_refresh_token:d.refresh_token,strava_token_expiry:d.expires_at}).eq('id',currentUser.id);return true;}
     return false;
   }catch(e){return false;}
 }
 function atualizarUIStrava(c){
   document.getElementById('stravaOff').style.display=c?'none':'block';
   document.getElementById('stravaOn').style.display=c?'block':'none';
-  document.getElementById('cfgStravaOff').style.display=c?'none':'block';
-  document.getElementById('cfgStravaOn').style.display=c?'block':'none';
 }
 async function syncStrava(){
-  if(!state.token)return;
-  const ok=await refreshTokenSeNecessario();
-  if(!ok){toast('Reconecte o Strava em Config');desconectarStrava();return;}
+  if(!perfil.strava_token)return;
+  const ok=await refreshStravaToken();
+  if(!ok){atualizarUIStrava(false);return;}
   document.getElementById('stravaActInfo').textContent='Buscando atividades...';
   try{
     const hoje=new Date();
     const after=Math.floor(new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()).getTime()/1000);
-    const r=await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${after}&per_page=10`,{headers:{Authorization:'Bearer '+state.token}});
-    if(r.status===401){desconectarStrava();return;}
+    const r=await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${after}&per_page=10`,{headers:{Authorization:'Bearer '+perfil.strava_token}});
+    if(r.status===401){atualizarUIStrava(false);return;}
     const acts=await r.json();
     if(Array.isArray(acts)&&acts.length){
       const total=Math.round(acts.reduce((s,a)=>s+(a.calories||0),0));
       const dist=(acts.reduce((s,a)=>s+(a.distance||0),0)/1000).toFixed(1);
-      state.ultimaAtividade=`${acts.map(a=>a.name).join(', ')} · ${dist}km · ${total} kcal`;
-      document.getElementById('stravaActInfo').textContent=state.ultimaAtividade;
-    }else{state.ultimaAtividade=null;document.getElementById('stravaActInfo').textContent='Nenhuma atividade hoje ainda.';}
-    salvarState();
+      ultimaAtividade=`${acts.map(a=>a.name).join(', ')} · ${dist}km · ${total} kcal`;
+      document.getElementById('stravaActInfo').textContent=ultimaAtividade;
+    }else{ultimaAtividade=null;document.getElementById('stravaActInfo').textContent='Nenhuma atividade hoje ainda.';}
   }catch(e){document.getElementById('stravaActInfo').textContent='Erro ao buscar atividades.';}
-}
-function desconectarStrava(){state.token=null;state.refreshToken=null;state.tokenExpiry=0;state.ultimaAtividade=null;salvarState();atualizarUIStrava(false);toast('Strava desconectado');}
-
-function carregarConfig(){
-  if(state.altura)document.getElementById('alturaConfig').value=state.altura;
-  if(state.sexo)document.getElementById('sexoConfig').value=state.sexo;
-  if(state.idade)document.getElementById('idadeConfig').value=state.idade;
-  if(state.metaPeso)document.getElementById('metaPesoConfig').value=state.metaPeso;
-  if(state.metaAbd)document.getElementById('metaAbdConfig').value=state.metaAbd;
-  if(state.metaGord)document.getElementById('metaGordConfig').value=state.metaGord;
-  if(state.clientSecret)document.getElementById('clientSecretInput').value='••••••••••••••••••••';
-  if(state.token){const exp=new Date(state.tokenExpiry*1000);document.getElementById('cfgTokenExpiry').textContent='Token válido até: '+exp.toLocaleString('pt-BR');}
-  renderHabitosConfig();
 }
 
 // NOTIFICAÇÕES
 function pedirNotificacao(tipo){
   if(!('Notification' in window)){toast('Navegador não suporta notificações');return;}
   Notification.requestPermission().then(p=>{
-    if(p==='granted'){
-      if(tipo==='diario'){toast('Lembrete diário ativado!');agendarDiario();}
-      else{toast('Lembrete semanal ativado!');agendarSemanal();}
-    }else toast('Permissão negada');
+    if(p==='granted'){if(tipo==='diario'){toast('Lembrete diário ativado!');agendarDiario();}else{toast('Lembrete semanal ativado!');agendarSemanal();}}
+    else toast('Permissão negada');
   });
 }
-function agendarDiario(){
-  const agora=new Date(),alvo=new Date();alvo.setHours(20,0,0,0);
-  if(alvo<=agora)alvo.setDate(alvo.getDate()+1);
-  setTimeout(()=>{new Notification('Minha Evolução 💪',{body:'Hora de registrar o dia!'});agendarDiario();},alvo-agora);
-}
-function agendarSemanal(){
-  const agora=new Date();
-  const diasParaDomingo=(7-agora.getDay())%7||7;
-  const proximo=new Date(agora);proximo.setDate(agora.getDate()+diasParaDomingo);proximo.setHours(9,0,0,0);
-  setTimeout(()=>{new Notification('Foto semanal 📸',{body:'Domingo é dia de tirar a foto de progresso!'});agendarSemanal();},proximo-agora);
-}
-
-// IMPORT / EXPORT
-function exportarDados(){
-  const dados=state.registros.map(r=>({data:r.data,peso:r.peso,imc:r.imc,abdomen:r.abdomen,gordura:r.gordura,musculo:r.musculo,agua:r.agua,metabolismo:r.metabolismo,idadeCorporal:r.idadeCorporal,strava:r.strava,checks:r.checks}));
-  const blob=new Blob([JSON.stringify({versao:7,exportado:new Date().toISOString(),registros:dados},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='evolucao_'+new Date().toISOString().split('T')[0]+'.json';a.click();toast('Exportado!');
-}
-function importarDados(){document.getElementById('importFile').click();}
-function processarImport(input){
-  if(!input.files||!input.files[0])return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const json=JSON.parse(e.target.result);
-      const registros=json.registros||json;
-      if(!Array.isArray(registros)){toast('Arquivo inválido');return;}
-      let importados=0;
-      registros.forEach(r=>{
-        if(!r.data)return;
-        const idx=state.registros.findIndex(x=>x.data===r.data);
-        const reg={data:r.data,fotoRosto:null,fotoCorpo:null,peso:r.peso||null,imc:r.imc||null,abdomen:r.abdomen||null,gordura:r.gordura||null,musculo:r.musculo||null,agua:r.agua||null,metabolismo:r.metabolismo||null,idadeCorporal:r.idadeCorporal||null,strava:r.strava||null,checks:r.checks||{}};
-        if(idx>=0)state.registros[idx]={...state.registros[idx],...reg};
-        else{state.registros.push(reg);importados++;}
-      });
-      salvarState();renderTimeline();renderMetas();calcularStreak();
-      toast(`Importados ${importados} registros!`);
-    }catch(ex){toast('Erro ao importar arquivo');}
-  };
-  reader.readAsText(input.files[0]);
-  input.value='';
-}
-
-function limparDados(){
-  if(!confirm('Apagar TODOS os registros?'))return;
-  state.registros=[];state.token=null;state.refreshToken=null;state.clientSecret=null;
-  salvarState();atualizarUIStrava(false);renderMetas();calcularStreak();renderChecklist();toast('Dados apagados');
-}
+function agendarDiario(){const agora=new Date(),alvo=new Date();alvo.setHours(20,0,0,0);if(alvo<=agora)alvo.setDate(alvo.getDate()+1);setTimeout(()=>{new Notification('Minha Evolução 💪',{body:'Hora de registrar o dia!'});agendarDiario();},alvo-agora);}
+function agendarSemanal(){const agora=new Date(),diasParaDomingo=(7-agora.getDay())%7||7,proximo=new Date(agora);proximo.setDate(agora.getDate()+diasParaDomingo);proximo.setHours(9,0,0,0);setTimeout(()=>{new Notification('Foto semanal 📸',{body:'Domingo é dia de foto de progresso!'});agendarSemanal();},proximo-agora);}
 
 // INIT
-document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
-carregarState();
-if(!state.habitos||!state.habitos.length)state.habitos=[...DEFAULT_HABITOS];
-if(state.token){atualizarUIStrava(true);syncStrava();}
-mostrarUltimoPeso();renderChecklist();renderMetas();
-
 const params=new URLSearchParams(window.location.search);
 const code=params.get('code');
-if(code)setTimeout(()=>trocarCode(code),300);
+if(code){
+  // vem do redirect do Strava — precisa estar logado primeiro
+  init().then(()=>{if(currentUser)trocarCode(code);});
+}else{
+  init();
+}
 </script>
-
 </body>
 </html>
