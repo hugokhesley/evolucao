@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -204,16 +205,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .secret-input-wrap input{width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;font-family:monospace;}
 .secret-hint{font-size:12px;color:#aaa;margin-top:6px;line-height:1.5;}
 </style>
+
 </head>
 <body>
 
 <!-- Loading -->
+
 <div class="loading-screen" id="loadingScreen">
   <div class="spinner"></div>
   <p style="font-size:14px;color:#888;">Carregando...</p>
 </div>
 
 <!-- Login -->
+
 <div class="login-screen" id="loginScreen" style="display:none">
   <div class="login-logo">💪</div>
   <div class="login-title">Minha Evolução</div>
@@ -232,6 +236,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 </div>
 
 <!-- App principal -->
+
 <div id="mainApp" style="display:none">
   <div class="saving-indicator" id="savingIndicator">Salvando...</div>
 
@@ -244,230 +249,233 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="user-initials" id="userAvatar" onclick="confirmarLogout()"></div>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('registrar')">Hoje</button>
-      <button class="tab" onclick="showTab('timeline')">Histórico</button>
-      <button class="tab" onclick="showTab('comparar')">Comparar</button>
-      <button class="tab" onclick="showTab('config')">Config</button>
-    </div>
+```
+<div class="tabs">
+  <button class="tab active" onclick="showTab('registrar')">Hoje</button>
+  <button class="tab" onclick="showTab('timeline')">Histórico</button>
+  <button class="tab" onclick="showTab('comparar')">Comparar</button>
+  <button class="tab" onclick="showTab('config')">Config</button>
+</div>
 
-    <!-- TAB REGISTRAR -->
-    <div id="tab-registrar">
-      <!-- Streaks duplos -->
-      <div class="streak-wrap">
-        <div class="streak-banner habitos">
-          <div class="streak-fire" id="streakFire">💊</div>
-          <div class="streak-info">
-            <div class="streak-num" id="streakNum">0</div>
-            <div class="streak-label">dias hábitos</div>
-            <div class="streak-sub" id="streakSub">Complete hoje!</div>
-          </div>
-        </div>
-        <div class="streak-banner strava">
-          <div class="streak-fire" id="streakExFire">🏃</div>
-          <div class="streak-info">
-            <div class="streak-num" id="streakExNum">0</div>
-            <div class="streak-label">dias treino</div>
-            <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
-          </div>
-        </div>
-      </div>
-      <!-- Barra de preenchimento do dia -->
-      <div class="day-progress-card">
-        <div class="day-progress-header">
-          <span class="day-progress-title">Registro de hoje</span>
-          <span class="day-progress-pct" id="dayPct">0%</span>
-        </div>
-        <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="dayBar" style="width:0%"></div></div>
-        <div class="day-progress-items" id="dayItems"></div>
-      </div>
-
-      <div class="gauge-card" id="gaugeCard" style="display:none">
-        <div class="gauge-grid">
-          <div id="imcBlock">
-            <div class="section-title">IMC</div>
-            <div class="gauge-valor" id="imcValor">--</div>
-            <div class="gauge-label" id="imcCat">--</div>
-            <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
-            <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
-            <div class="gauge-frase" id="imcFrase"></div>
-          </div>
-          <div id="cinBlock" style="display:none">
-            <div class="section-title">Cintura</div>
-            <div class="gauge-valor" id="cinValor">--</div>
-            <div class="gauge-label" id="cinCat">--</div>
-            <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
-            <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
-            <div class="gauge-frase" id="cinFrase"></div>
-          </div>
-        </div>
-        <div id="balancaPreview" style="display:none">
-          <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
-            <div class="section-title">Composição corporal</div>
-            <div class="balanca-extra" id="balancaPreviewGrid"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="meta-card" id="metaCard" style="display:none">
-        <div class="section-title">Progresso nas metas</div>
-        <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
-        <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
-        <div id="metaGordBlock" style="display:none" class="meta-item"></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Fotos de hoje</div>
-        <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
-          <span style="font-size:20px">🤳</span><span>Foto do rosto</span>
-        </button>
-        <input type="file" id="fotoRosto" accept="image/*" onchange="loadPreview(this,'prevRosto','wrapRosto')">
-        <div class="preview-wrap" id="wrapRosto">
-          <img id="prevRosto" alt="rosto">
-          <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
-        </div>
-        <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
-          <span style="font-size:20px">📷</span><span>Foto do corpo</span>
-        </button>
-        <input type="file" id="fotoCorpo" accept="image/*" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
-        <div class="preview-wrap" id="wrapCorpo">
-          <img id="prevCorpo" alt="corpo">
-          <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Medidas — balança</div>
-        <div class="input-row">
-          <label>Peso</label>
-          <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
-          <span>kg</span>
-        </div>
-        <div class="input-row">
-          <label>Cintura</label>
-          <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
-          <span>cm</span>
-        </div>
-        <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
-          <div class="input-grid">
-            <div class="input-grid-item"><label>% Gordura</label><input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()"><div class="unit">%</div></div>
-            <div class="input-grid-item"><label>% Músculo</label><input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8"><div class="unit">%</div></div>
-            <div class="input-grid-item"><label>% Água</label><input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2"><div class="unit">%</div></div>
-            <div class="input-grid-item"><label>Metabolismo basal</label><input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108"><div class="unit">kcal</div></div>
-            <div class="input-grid-item"><label>Idade corporal</label><input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37"><div class="unit">anos</div></div>
-          </div>
-        </div>
-        <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Medicações e hábitos de hoje</div>
-        <div id="checklistWrap"></div>
-        <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
-        <div class="check-count" id="checkCount">0 de 0</div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Strava — atividade de hoje</div>
-        <div id="stravaOff">
-          <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
-          <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
-          <div class="secret-input-wrap">
-            <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
-            <p class="secret-hint">Cole o Client Secret antes de conectar. Salvo na nuvem.</p>
-          </div>
-        </div>
-        <div id="stravaOn" style="display:none">
-          <div class="strava-status">
-            <span class="dot green"></span>
-            <span style="font-size:14px;font-weight:600;">Strava conectado</span>
-            <span class="badge">ativo</span>
-          </div>
-          <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
-          <button class="btn sm" onclick="syncStrava()">Atualizar</button>
-          <div id="anoTreinados"></div>
-        </div>
-      </div>
-
-      <div id="editandoBanner" style="display:none;background:#faeeda;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#854F0B;font-weight:500;text-align:center;"></div>
-      <button class="btn primary" onclick="salvarDia()" id="btnSalvar">Salvar registro de hoje</button>
-    </div>
-
-    <!-- TAB TIMELINE -->
-    <div id="tab-timeline" style="display:none">
-      <div class="card" id="resumoCard" style="display:none">
-        <div class="section-title">Resumo geral</div>
-        <div class="metric-row" id="resumoMetrics"></div>
-      </div>
-      <div class="card">
-        <div class="section-title">Histórico</div>
-        <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
+<!-- TAB REGISTRAR -->
+<div id="tab-registrar">
+  <!-- Streaks duplos -->
+  <div class="streak-wrap">
+    <div class="streak-banner habitos">
+      <div class="streak-fire" id="streakFire">💊</div>
+      <div class="streak-info">
+        <div class="streak-num" id="streakNum">0</div>
+        <div class="streak-label">dias hábitos</div>
+        <div class="streak-sub" id="streakSub">Complete hoje!</div>
       </div>
     </div>
-
-    <!-- TAB COMPARAR -->
-    <div id="tab-comparar" style="display:none">
-      <div class="card">
-        <div class="section-title">Comparar dois dias</div>
-        <div class="compare-selects">
-          <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
-          <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
-        </div>
-        <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
+    <div class="streak-banner strava">
+      <div class="streak-fire" id="streakExFire">🏃</div>
+      <div class="streak-info">
+        <div class="streak-num" id="streakExNum">0</div>
+        <div class="streak-label">dias treino</div>
+        <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
       </div>
     </div>
+  </div>
+  <!-- Barra de preenchimento do dia -->
+  <div class="day-progress-card">
+    <div class="day-progress-header">
+      <span class="day-progress-title">Registro de hoje</span>
+      <span class="day-progress-pct" id="dayPct">0%</span>
+    </div>
+    <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="dayBar" style="width:0%"></div></div>
+    <div class="day-progress-items" id="dayItems"></div>
+  </div>
 
-    <!-- TAB CONFIG -->
-    <div id="tab-config" style="display:none">
-      <div class="card">
-        <div class="section-title">Seus dados fixos</div>
-        <div class="input-row"><label>Altura</label><input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" onchange="salvarPerfil()"><span>cm</span></div>
-        <div class="input-row" style="margin-bottom:8px">
-          <label>Sexo biológico</label>
-          <select id="sexoConfig" onchange="salvarPerfil()" style="flex:1;padding:10px;font-size:14px;">
-            <option value="">Selecione</option>
-            <option value="M">Masculino</option>
-            <option value="F">Feminino</option>
-          </select>
-        </div>
-        <div class="input-row" style="margin-bottom:0"><label>Idade real</label><input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" onchange="salvarPerfil()"><span>anos</span></div>
+  <div class="gauge-card" id="gaugeCard" style="display:none">
+    <div class="gauge-grid">
+      <div id="imcBlock">
+        <div class="section-title">IMC</div>
+        <div class="gauge-valor" id="imcValor">--</div>
+        <div class="gauge-label" id="imcCat">--</div>
+        <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
+        <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
+        <div class="gauge-frase" id="imcFrase"></div>
       </div>
-
-      <div class="card">
-        <div class="section-title">Minhas metas</div>
-        <div class="input-row"><label>Meta peso</label><input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" onchange="salvarPerfil()"><span>kg</span></div>
-        <div class="input-row"><label>Meta cintura</label><input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" onchange="salvarPerfil()"><span>cm</span></div>
-        <div class="input-row" style="margin-bottom:0"><label>Meta gordura</label><input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" onchange="salvarPerfil()"><span>%</span></div>
-        <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente na nuvem.</p>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Medicações e hábitos</div>
-        <div id="habitosListConfig"></div>
-        <div class="add-habito-row">
-          <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
-          <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Lembretes</div>
-        <div class="notif-row"><label>Lembrete diário às 20h</label><button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button></div>
-        <div class="notif-row"><label>Foto semanal (domingo)</label><button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Conta</div>
-        <p id="userEmail" style="font-size:14px;color:#888;margin-bottom:10px;"></p>
-        <button class="btn danger" onclick="confirmarLogout()">Sair da conta</button>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Sobre</div>
-        <p style="font-size:13px;color:#888;line-height:1.6;">Seus dados e fotos são salvos com segurança na nuvem. Acesse de qualquer dispositivo fazendo login com o mesmo Google.</p>
+      <div id="cinBlock" style="display:none">
+        <div class="section-title">Cintura</div>
+        <div class="gauge-valor" id="cinValor">--</div>
+        <div class="gauge-label" id="cinCat">--</div>
+        <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
+        <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
+        <div class="gauge-frase" id="cinFrase"></div>
       </div>
     </div>
+    <div id="balancaPreview" style="display:none">
+      <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
+        <div class="section-title">Composição corporal</div>
+        <div class="balanca-extra" id="balancaPreviewGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta-card" id="metaCard" style="display:none">
+    <div class="section-title">Progresso nas metas</div>
+    <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
+    <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
+    <div id="metaGordBlock" style="display:none" class="meta-item"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Fotos de hoje</div>
+    <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
+      <span style="font-size:20px">🤳</span><span>Foto do rosto</span>
+    </button>
+    <input type="file" id="fotoRosto" accept="image/*" onchange="loadPreview(this,'prevRosto','wrapRosto')">
+    <div class="preview-wrap" id="wrapRosto">
+      <img id="prevRosto" alt="rosto">
+      <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
+    </div>
+    <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
+      <span style="font-size:20px">📷</span><span>Foto do corpo</span>
+    </button>
+    <input type="file" id="fotoCorpo" accept="image/*" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
+    <div class="preview-wrap" id="wrapCorpo">
+      <img id="prevCorpo" alt="corpo">
+      <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Medidas — balança</div>
+    <div class="input-row">
+      <label>Peso</label>
+      <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
+      <span>kg</span>
+    </div>
+    <div class="input-row">
+      <label>Cintura</label>
+      <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
+      <span>cm</span>
+    </div>
+    <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
+      <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
+      <div class="input-grid">
+        <div class="input-grid-item"><label>% Gordura</label><input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()"><div class="unit">%</div></div>
+        <div class="input-grid-item"><label>% Músculo</label><input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8"><div class="unit">%</div></div>
+        <div class="input-grid-item"><label>% Água</label><input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2"><div class="unit">%</div></div>
+        <div class="input-grid-item"><label>Metabolismo basal</label><input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108"><div class="unit">kcal</div></div>
+        <div class="input-grid-item"><label>Idade corporal</label><input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37"><div class="unit">anos</div></div>
+      </div>
+    </div>
+    <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Medicações e hábitos de hoje</div>
+    <div id="checklistWrap"></div>
+    <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
+    <div class="check-count" id="checkCount">0 de 0</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Strava — atividade de hoje</div>
+    <div id="stravaOff">
+      <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
+      <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
+      <div class="secret-input-wrap">
+        <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
+        <p class="secret-hint">Cole o Client Secret antes de conectar. Salvo na nuvem.</p>
+      </div>
+    </div>
+    <div id="stravaOn" style="display:none">
+      <div class="strava-status">
+        <span class="dot green"></span>
+        <span style="font-size:14px;font-weight:600;">Strava conectado</span>
+        <span class="badge">ativo</span>
+      </div>
+      <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
+      <button class="btn sm" onclick="syncStrava()">Atualizar</button>
+      <div id="anoTreinados"></div>
+    </div>
+  </div>
+
+  <div id="editandoBanner" style="display:none;background:#faeeda;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#854F0B;font-weight:500;text-align:center;"></div>
+  <button class="btn primary" onclick="salvarDia()" id="btnSalvar">Salvar registro de hoje</button>
+</div>
+
+<!-- TAB TIMELINE -->
+<div id="tab-timeline" style="display:none">
+  <div class="card" id="resumoCard" style="display:none">
+    <div class="section-title">Resumo geral</div>
+    <div class="metric-row" id="resumoMetrics"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Histórico</div>
+    <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
+  </div>
+</div>
+
+<!-- TAB COMPARAR -->
+<div id="tab-comparar" style="display:none">
+  <div class="card">
+    <div class="section-title">Comparar dois dias</div>
+    <div class="compare-selects">
+      <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
+      <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
+    </div>
+    <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
+  </div>
+</div>
+
+<!-- TAB CONFIG -->
+<div id="tab-config" style="display:none">
+  <div class="card">
+    <div class="section-title">Seus dados fixos</div>
+    <div class="input-row"><label>Altura</label><input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" onchange="salvarPerfil()"><span>cm</span></div>
+    <div class="input-row" style="margin-bottom:8px">
+      <label>Sexo biológico</label>
+      <select id="sexoConfig" onchange="salvarPerfil()" style="flex:1;padding:10px;font-size:14px;">
+        <option value="">Selecione</option>
+        <option value="M">Masculino</option>
+        <option value="F">Feminino</option>
+      </select>
+    </div>
+    <div class="input-row" style="margin-bottom:0"><label>Idade real</label><input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" onchange="salvarPerfil()"><span>anos</span></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Minhas metas</div>
+    <div class="input-row"><label>Meta peso</label><input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" onchange="salvarPerfil()"><span>kg</span></div>
+    <div class="input-row"><label>Meta cintura</label><input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" onchange="salvarPerfil()"><span>cm</span></div>
+    <div class="input-row" style="margin-bottom:0"><label>Meta gordura</label><input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" onchange="salvarPerfil()"><span>%</span></div>
+    <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente na nuvem.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Medicações e hábitos</div>
+    <div id="habitosListConfig"></div>
+    <div class="add-habito-row">
+      <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
+      <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Lembretes</div>
+    <div class="notif-row"><label>Lembrete diário às 20h</label><button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button></div>
+    <div class="notif-row"><label>Foto semanal (domingo)</label><button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Conta</div>
+    <p id="userEmail" style="font-size:14px;color:#888;margin-bottom:10px;"></p>
+    <button class="btn danger" onclick="confirmarLogout()">Sair da conta</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Sobre</div>
+    <p style="font-size:13px;color:#888;line-height:1.6;">Seus dados e fotos são salvos com segurança na nuvem. Acesse de qualquer dispositivo fazendo login com o mesmo Google.</p>
+  </div>
+</div>
+```
+
   </div>
 </div>
 
@@ -1076,26 +1084,56 @@ function showTab(tab){
 }
 
 // STRAVA
-function connectStrava(){
+const STRAVA_REDIRECT=window.location.href.split('?')[0].split('#')[0];
+
+async function connectStrava(){
   const si=document.getElementById('clientSecretInput').value;
-  if(si&&!si.startsWith('•')){perfil.strava_client_secret=si.trim();sb.from('perfis').update({strava_client_secret:perfil.strava_client_secret}).eq('id',currentUser.id);}
+  if(si&&!si.startsWith('•')){
+    perfil.strava_client_secret=si.trim();
+    await sb.from('perfis').update({strava_client_secret:perfil.strava_client_secret}).eq('id',currentUser.id);
+  }
   if(!perfil.strava_client_secret){toast('Cole o Client Secret antes de conectar',3500);return;}
-  const redirect=window.location.href.split('?')[0].split('#')[0];
-  window.location.href=`https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(redirect)}&approval_prompt=force&scope=activity:read_all`;
+  window.location.href=`https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT)}&approval_prompt=force&scope=activity:read_all`;
 }
 async function trocarCode(code){
-  if(!perfil.strava_client_secret)return;
+  if(!perfil.strava_client_secret){
+    toast('Client Secret não encontrado. Configure em Config.',3500);
+    return;
+  }
   toast('Conectando ao Strava...',4000);
   try{
-    const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:CLIENT_ID,client_secret:perfil.strava_client_secret,code,grant_type:'authorization_code'})});
+    const r=await fetch('https://www.strava.com/oauth/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        client_id:CLIENT_ID,
+        client_secret:perfil.strava_client_secret,
+        code,
+        grant_type:'authorization_code',
+        redirect_uri:STRAVA_REDIRECT
+      })
+    });
     const d=await r.json();
     if(d.access_token){
-      perfil.strava_token=d.access_token;perfil.strava_refresh_token=d.refresh_token;perfil.strava_token_expiry=d.expires_at;
-      await sb.from('perfis').update({strava_token:d.access_token,strava_refresh_token:d.refresh_token,strava_token_expiry:d.expires_at}).eq('id',currentUser.id);
-      atualizarUIStrava(true);await syncStrava();toast('Strava conectado! ✓');
-      window.history.replaceState({},document.title,window.location.href.split('?')[0]);
-    }else toast('Erro: '+(d.message||'verifique o Client Secret'));
-  }catch(e){toast('Erro ao conectar com o Strava');}
+      perfil.strava_token=d.access_token;
+      perfil.strava_refresh_token=d.refresh_token;
+      perfil.strava_token_expiry=d.expires_at;
+      await sb.from('perfis').update({
+        strava_token:d.access_token,
+        strava_refresh_token:d.refresh_token,
+        strava_token_expiry:d.expires_at
+      }).eq('id',currentUser.id);
+      atualizarUIStrava(true);
+      await syncStrava();
+      toast('Strava conectado! ✓');
+    } else {
+      toast('Erro Strava: '+(d.message||JSON.stringify(d)));
+      console.error('Strava error:',d);
+    }
+  }catch(e){
+    toast('Erro ao conectar com o Strava');
+    console.error(e);
+  }
 }
 async function refreshStravaToken(){
   if(!perfil.strava_token||!perfil.strava_refresh_token||!perfil.strava_client_secret)return false;
@@ -1143,14 +1181,30 @@ function agendarDiario(){const agora=new Date(),alvo=new Date();alvo.setHours(20
 function agendarSemanal(){const agora=new Date(),diasParaDomingo=(7-agora.getDay())%7||7,proximo=new Date(agora);proximo.setDate(agora.getDate()+diasParaDomingo);proximo.setHours(9,0,0,0);setTimeout(()=>{new Notification('Foto semanal 📸',{body:'Domingo é dia de foto de progresso!'});agendarSemanal();},proximo-agora);}
 
 // INIT
-const params=new URLSearchParams(window.location.search);
-const code=params.get('code');
-if(code){
-  // vem do redirect do Strava — precisa estar logado primeiro
-  init().then(()=>{if(currentUser)trocarCode(code);});
-}else{
-  init();
+async function start(){
+  const params=new URLSearchParams(window.location.search);
+  const stravaCode=params.get('code');
+  const stravaState=params.get('state'); // Strava manda 'state', Google não
+
+  // Limpa a URL pra não reprocessar
+  if(stravaCode){
+    window.history.replaceState({},document.title,window.location.href.split('?')[0]);
+  }
+
+  await init();
+
+  // Se veio código do Strava (não do Google OAuth)
+  // Google OAuth não manda 'code' na query string, vai no hash
+  if(stravaCode && !window.location.hash.includes('access_token')){
+    if(currentUser && perfil.strava_client_secret){
+      await trocarCode(stravaCode);
+    } else if(currentUser) {
+      toast('Cole o Client Secret do Strava em Config e conecte novamente',4000);
+    }
+  }
 }
+start();
 </script>
+
 </body>
 </html>
