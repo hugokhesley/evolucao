@@ -57,6 +57,8 @@ input[type=file]{display:none;}
 .entry-date{font-size:14px;font-weight:600;}
 .entry-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:0 2px;}
 .entry-del:hover{color:#D85A30;}
+.entry-edit{background:none;border:none;cursor:pointer;font-size:15px;padding:0 2px;opacity:0.5;}
+.entry-edit:hover{opacity:1;}
 .entry-photos{display:flex;gap:6px;margin-bottom:8px;}
 .entry-photos img{flex:1;min-width:0;border-radius:10px;object-fit:cover;height:100px;cursor:pointer;}
 .entry-row{font-size:13px;color:#666;margin-top:4px;}
@@ -802,7 +804,9 @@ function salvarDia(){
   const agua=document.getElementById('aguaInput').value;
   const metabolismo=document.getElementById('metabolismoInput').value;
   const idadeCorporal=document.getElementById('idadeCorporalInput').value;
-  const hoje=new Date().toISOString().split('T')[0];
+  // se estiver editando um registro antigo, usa aquela data
+  const hoje=state._editandoData||new Date().toISOString().split('T')[0];
+  state._editandoData=null;
 
   // busca registro existente do dia para MESCLAR (nunca sobrescrever)
   const idx=state.registros.findIndex(r=>r.data===hoje);
@@ -879,13 +883,45 @@ function renderTimeline(){
     const checks=r.checks||{};
     const checksPills=state.habitos.map((h,idx)=>`<span class="check-pill ${checks[idx]?'ok':'no'}">${h}</span>`).join('');
     return`<div class="entry-card">
-      <div class="entry-header"><span class="entry-date">${isHoje?'Hoje — ':''}${label}</span><button class="entry-del" onclick="deletarRegistro('${r.data}')">✕</button></div>
+      <div class="entry-header">
+        <span class="entry-date">${isHoje?'Hoje — ':''}${label}</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="entry-edit" onclick="editarRegistro('${r.data}')" title="Editar">✏️</button>
+          <button class="entry-del" onclick="deletarRegistro('${r.data}')">✕</button>
+        </div>
+      </div>
       ${fotos.length?`<div class="entry-photos">${fotos.map(f=>`<img src="${f}" onclick="openModal('${f}')" alt="foto">`).join('')}</div>`:''}
       ${pesoH}${abdH}${compH}
       ${r.strava?`<div class="entry-strava">🏃 ${r.strava}</div>`:''}
       ${state.habitos.length?`<div class="entry-checks">${checksPills}</div>`:''}
     </div>`;
   }).join('');
+}
+
+function editarRegistro(data){
+  const reg=state.registros.find(r=>r.data===data);
+  if(!reg)return;
+  // carrega dados nos campos da aba Hoje
+  if(reg.peso)document.getElementById('pesoInput').value=reg.peso;
+  if(reg.abdomen)document.getElementById('abdomenInput').value=reg.abdomen;
+  if(reg.gordura)document.getElementById('gorduraInput').value=reg.gordura;
+  if(reg.musculo)document.getElementById('musculoInput').value=reg.musculo;
+  if(reg.agua)document.getElementById('aguaInput').value=reg.agua;
+  if(reg.metabolismo)document.getElementById('metabolismoInput').value=reg.metabolismo;
+  if(reg.idadeCorporal)document.getElementById('idadeCorporalInput').value=reg.idadeCorporal;
+  // carrega fotos
+  if(reg.fotoRosto){document.getElementById('prevRosto').src=reg.fotoRosto;document.getElementById('wrapRosto').style.display='block';}
+  if(reg.fotoCorpo){document.getElementById('prevCorpo').src=reg.fotoCorpo;document.getElementById('wrapCorpo').style.display='block';}
+  // se for um dia anterior, ajusta temporariamente a data de salvamento
+  if(data!==new Date().toISOString().split('T')[0]){
+    state._editandoData=data;
+    toast(`Editando registro de ${new Date(data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'short'})} — salve quando terminar`,4000);
+  } else {
+    state._editandoData=null;
+    toast('Dados carregados — edite e salve',3000);
+  }
+  calcularGauges();
+  showTab('registrar');
 }
 
 function deletarRegistro(data){
