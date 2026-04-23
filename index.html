@@ -636,7 +636,7 @@ async function salvarDia(){
   const agua=document.getElementById('aguaInput').value;
   const metabolismo=document.getElementById('metabolismoInput').value;
   const idadeCorporal=document.getElementById('idadeCorporalInput').value;
-  const hoje=editandoData||new Date().toISOString().split('T')[0];
+  const hoje=editandoData||hojeLocal();
   editandoData=null;
   document.getElementById('editandoBanner').style.display='none';
   document.getElementById('btnSalvar').textContent='Salvar registro de hoje';
@@ -748,7 +748,7 @@ async function deletarRegistro(data){
 // STREAK
 function calcularStreak(){
   const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const anoAtual=new Date().getFullYear();
 
   // --- Streak de hábitos ---
@@ -794,7 +794,7 @@ function calcularStreak(){
   document.getElementById('streakExSub').textContent=treinouHoje?'Treinou hoje! ✓':'Sem treino hoje';
 
   // --- Acumulado do ano de exercícios (renderizado em outro lugar) ---
-  const diasTreinados=registros.filter(r=>r.strava&&r.data.startsWith(anoAtual)).length;
+  const diasTreinados=registros.filter(r=>r.strava&&r.data.startsWith(String(anoAtual))).length;
   const elAno=document.getElementById('anoTreinados');
   if(elAno){
     const semanas=Math.floor((new Date()-new Date(anoAtual+'-01-01'))/(7*24*3600*1000));
@@ -807,7 +807,7 @@ function calcularStreak(){
 }
 
 function renderDayProgress(){
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const reg=registros.find(r=>r.data===hoje);
   const checks=reg?.checks||{};
   const habitosFeitos=perfil.habitos.length>0?perfil.habitos.every((_,i)=>checks[i]):null;
@@ -940,7 +940,7 @@ function renderMetas(){
 function renderChecklist(){
   const wrap=document.getElementById('checklistWrap');
   if(!perfil.habitos.length){wrap.innerHTML='<p style="font-size:13px;color:#aaa;">Nenhum hábito cadastrado. Adicione em Config.</p>';calcularStreak();return;}
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const regHoje=registros.find(r=>r.data===hoje);
   const checked=regHoje?.checks||{};
   wrap.innerHTML=perfil.habitos.map((h,i)=>{
@@ -954,7 +954,7 @@ function renderChecklist(){
 }
 
 async function toggleCheck(idx){
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   let regHoje=registros.find(r=>r.data===hoje);
   if(!regHoje){
     const{data}=await sb.from('registros').upsert({user_id:currentUser.id,data:hoje,checks:{}},{onConflict:'user_id,data'}).select().single();
@@ -968,7 +968,7 @@ async function toggleCheck(idx){
 }
 
 function atualizarProgressoCheck(){
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const regHoje=registros.find(r=>r.data===hoje);
   const checked=regHoje?.checks||{};
   const total=perfil.habitos.length,feitos=Object.values(checked).filter(Boolean).length;
@@ -1023,7 +1023,7 @@ function renderTimeline(){
     const prox=sorted.slice(i+1);
     const d=new Date(r.data+'T12:00:00');
     const label=d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
-    const isHoje=r.data===new Date().toISOString().split('T')[0];
+    const isHoje=r.data===hojeLocal();
     let pesoH='',abdH='',compH='';
     if(r.peso){const prev=prox.find(x=>x.peso);const dif=prev?((r.peso-prev.peso).toFixed(1)):'';pesoH=`<div class="entry-row">⚖️ <strong>${r.peso}kg</strong>${r.imc?` · IMC ${r.imc}`:''}${dif?` <span class="${parseFloat(dif)>0?'dif-neg':'dif-pos'}">${parseFloat(dif)>0?'+':''}${dif}kg</span>`:''}</div>`;}
     if(r.abdomen){const prev=prox.find(x=>x.abdomen);const dif=prev?((r.abdomen-prev.abdomen).toFixed(1)):'';abdH=`<div class="entry-row">📏 Cintura: <strong>${r.abdomen}cm</strong>${dif?` <span class="${parseFloat(dif)>0?'dif-neg':'dif-pos'}">${parseFloat(dif)>0?'+':''}${dif}cm</span>`:''}</div>`;}
@@ -1179,6 +1179,12 @@ function pedirNotificacao(tipo){
 }
 function agendarDiario(){const agora=new Date(),alvo=new Date();alvo.setHours(20,0,0,0);if(alvo<=agora)alvo.setDate(alvo.getDate()+1);setTimeout(()=>{new Notification('Minha Evolução 💪',{body:'Hora de registrar o dia!'});agendarDiario();},alvo-agora);}
 function agendarSemanal(){const agora=new Date(),diasParaDomingo=(7-agora.getDay())%7||7,proximo=new Date(agora);proximo.setDate(agora.getDate()+diasParaDomingo);proximo.setHours(9,0,0,0);setTimeout(()=>{new Notification('Foto semanal 📸',{body:'Domingo é dia de foto de progresso!'});agendarSemanal();},proximo-agora);}
+
+// DATA LOCAL (evita bug de fuso horário)
+function hojeLocal(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 // INIT
 async function start(){
