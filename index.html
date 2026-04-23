@@ -113,12 +113,33 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .saving-indicator{position:fixed;top:16px;right:16px;background:#1D9E75;color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;display:none;z-index:998;}
 
 /* STREAK */
-.streak-banner{background:linear-gradient(135deg,#1a1a1a 0%,#333 100%);border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:14px;}
-.streak-fire{font-size:36px;line-height:1;}
+.streak-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.streak-banner{border-radius:16px;padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;}
+.streak-banner.habitos{background:linear-gradient(135deg,#1a1a1a 0%,#333 100%);}
+.streak-banner.strava{background:linear-gradient(135deg,#b83600 0%,#fc4c02 100%);}
+.streak-fire{font-size:28px;line-height:1;}
 .streak-info{flex:1;}
-.streak-num{font-size:28px;font-weight:700;color:#fff;line-height:1;}
-.streak-label{font-size:13px;color:rgba(255,255,255,0.6);margin-top:2px;}
-.streak-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;}
+.streak-num{font-size:24px;font-weight:700;color:#fff;line-height:1;}
+.streak-label{font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;}
+.streak-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;}
+/* BARRA DO DIA */
+.day-progress-card{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.day-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.day-progress-title{font-size:13px;font-weight:600;color:#1a1a1a;}
+.day-progress-pct{font-size:22px;font-weight:700;color:#1D9E75;}
+.day-progress-bar-bg{height:10px;background:#f0f0ec;border-radius:99px;overflow:hidden;margin-bottom:12px;}
+.day-progress-bar-fill{height:10px;border-radius:99px;background:#1D9E75;transition:width 0.5s;}
+.day-progress-items{display:flex;flex-wrap:wrap;gap:6px;}
+.day-item{display:flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;border-radius:99px;font-weight:500;}
+.day-item.done{background:#e8f5ef;color:#0F6E56;}
+.day-item.pending{background:#f5f5f0;color:#aaa;}
+.day-item-icon{font-size:13px;}
+/* ACUMULADO ANO */
+.ano-stat{background:#f9f9f7;border-radius:12px;padding:10px 14px;border:1px solid #ebebeb;margin-top:10px;display:flex;align-items:center;gap:12px;}
+.ano-stat-num{font-size:26px;font-weight:700;color:#fc4c02;}
+.ano-stat-info{flex:1;}
+.ano-stat-label{font-size:13px;font-weight:600;color:#1a1a1a;}
+.ano-stat-sub{font-size:12px;color:#888;margin-top:2px;}
 
 /* GAUGES */
 .gauge-card{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
@@ -232,13 +253,33 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     <!-- TAB REGISTRAR -->
     <div id="tab-registrar">
-      <div class="streak-banner">
-        <div class="streak-fire" id="streakFire">💊</div>
-        <div class="streak-info">
-          <div class="streak-num" id="streakNum">0</div>
-          <div class="streak-label" id="streakLabel">dias de sequência</div>
-          <div class="streak-sub" id="streakSub">Complete os hábitos de hoje!</div>
+      <!-- Streaks duplos -->
+      <div class="streak-wrap">
+        <div class="streak-banner habitos">
+          <div class="streak-fire" id="streakFire">💊</div>
+          <div class="streak-info">
+            <div class="streak-num" id="streakNum">0</div>
+            <div class="streak-label">dias hábitos</div>
+            <div class="streak-sub" id="streakSub">Complete hoje!</div>
+          </div>
         </div>
+        <div class="streak-banner strava">
+          <div class="streak-fire" id="streakExFire">🏃</div>
+          <div class="streak-info">
+            <div class="streak-num" id="streakExNum">0</div>
+            <div class="streak-label">dias treino</div>
+            <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
+          </div>
+        </div>
+      </div>
+      <!-- Barra de preenchimento do dia -->
+      <div class="day-progress-card">
+        <div class="day-progress-header">
+          <span class="day-progress-title">Registro de hoje</span>
+          <span class="day-progress-pct" id="dayPct">0%</span>
+        </div>
+        <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="dayBar" style="width:0%"></div></div>
+        <div class="day-progress-items" id="dayItems"></div>
       </div>
 
       <div class="gauge-card" id="gaugeCard" style="display:none">
@@ -345,6 +386,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
           <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
           <button class="btn sm" onclick="syncStrava()">Atualizar</button>
+          <div id="anoTreinados"></div>
         </div>
       </div>
 
@@ -638,7 +680,7 @@ async function salvarDia(){
     fotoRostoFile=null;fotoCorpoFile=null;
     ['pesoInput','abdomenInput','gorduraInput','musculoInput','aguaInput','metabolismoInput','idadeCorporalInput'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('gaugeCard').style.display='none';
-    mostrarUltimoPeso();renderMetas();renderChecklist();
+    mostrarUltimoPeso();renderMetas();renderChecklist();renderDayProgress();
     toast('Registro salvo na nuvem! ☁️ 💪');
   }
   showSaving(false);
@@ -697,26 +739,87 @@ async function deletarRegistro(data){
 
 // STREAK
 function calcularStreak(){
-  if(!perfil.habitos.length){document.getElementById('streakNum').textContent='--';document.getElementById('streakFire').textContent='💊';return;}
   const sorted=[...registros].sort((a,b)=>b.data.localeCompare(a.data));
-  let streak=0;
   const hoje=new Date().toISOString().split('T')[0];
-  const regHoje=sorted.find(r=>r.data===hoje);
-  const hojeCompleto=regHoje&&perfil.habitos.every((_,i)=>regHoje.checks&&regHoje.checks[i]);
-  let dataVerif=new Date();
-  if(!hojeCompleto)dataVerif.setDate(dataVerif.getDate()-1);
+  const anoAtual=new Date().getFullYear();
+
+  // --- Streak de hábitos ---
+  if(!perfil.habitos.length){
+    document.getElementById('streakNum').textContent='--';
+    document.getElementById('streakFire').textContent='💊';
+    document.getElementById('streakSub').textContent='Configure hábitos em Config';
+  } else {
+    const regHoje=sorted.find(r=>r.data===hoje);
+    const hojeCompleto=regHoje&&perfil.habitos.every((_,i)=>regHoje.checks&&regHoje.checks[i]);
+    let streak=0;
+    let dataVerif=new Date();
+    if(!hojeCompleto)dataVerif.setDate(dataVerif.getDate()-1);
+    for(let i=0;i<365;i++){
+      const d=new Date(dataVerif);d.setDate(d.getDate()-i);
+      const dStr=d.toISOString().split('T')[0];
+      const reg=sorted.find(r=>r.data===dStr);
+      if(reg&&perfil.habitos.every((_,idx)=>reg.checks&&reg.checks[idx]))streak++;
+      else break;
+    }
+    if(hojeCompleto)streak=Math.max(streak,1);
+    document.getElementById('streakNum').textContent=streak;
+    document.getElementById('streakFire').textContent=streak===0?'💊':streak<7?'🔥':streak<14?'🔥🔥':streak<30?'🔥🔥🔥':'🏆';
+    document.getElementById('streakSub').textContent=hojeCompleto?'Hábitos ok! ✓':'Complete hoje!';
+  }
+
+  // --- Streak de exercícios (Strava) ---
+  let streakEx=0;
+  const regHojeEx=sorted.find(r=>r.data===hoje);
+  const treinouHoje=!!(regHojeEx?.strava);
+  let dataVerifEx=new Date();
+  if(!treinouHoje)dataVerifEx.setDate(dataVerifEx.getDate()-1);
   for(let i=0;i<365;i++){
-    const d=new Date(dataVerif);d.setDate(d.getDate()-i);
+    const d=new Date(dataVerifEx);d.setDate(d.getDate()-i);
     const dStr=d.toISOString().split('T')[0];
     const reg=sorted.find(r=>r.data===dStr);
-    if(reg&&perfil.habitos.every((_,idx)=>reg.checks&&reg.checks[idx]))streak++;
+    if(reg&&reg.strava)streakEx++;
     else break;
   }
-  if(hojeCompleto)streak=Math.max(streak,1);
-  document.getElementById('streakNum').textContent=streak;
-  document.getElementById('streakLabel').textContent=streak===1?'dia de sequência':'dias de sequência';
-  document.getElementById('streakFire').textContent=streak===0?'💊':streak<7?'🔥':streak<14?'🔥🔥':streak<30?'🔥🔥🔥':'🏆';
-  document.getElementById('streakSub').textContent=hojeCompleto?'Hábitos de hoje concluídos! ✓':'Complete os hábitos hoje para manter!';
+  if(treinouHoje)streakEx=Math.max(streakEx,1);
+  document.getElementById('streakExNum').textContent=streakEx;
+  document.getElementById('streakExFire').textContent=streakEx===0?'🏃':streakEx<7?'⚡':streakEx<14?'💪':streakEx<30?'🔥':'🏆';
+  document.getElementById('streakExSub').textContent=treinouHoje?'Treinou hoje! ✓':'Sem treino hoje';
+
+  // --- Acumulado do ano de exercícios (renderizado em outro lugar) ---
+  const diasTreinados=registros.filter(r=>r.strava&&r.data.startsWith(anoAtual)).length;
+  const elAno=document.getElementById('anoTreinados');
+  if(elAno){
+    const semanas=Math.floor((new Date()-new Date(anoAtual+'-01-01'))/(7*24*3600*1000));
+    const media=semanas>0?(diasTreinados/semanas).toFixed(1):0;
+    elAno.innerHTML=`<div class="ano-stat"><div class="ano-stat-num">${diasTreinados}</div><div class="ano-stat-info"><div class="ano-stat-label">dias treinados em ${anoAtual}</div><div class="ano-stat-sub">${media} treinos/semana em média</div></div></div>`;
+  }
+
+  // --- Barra de progresso do dia ---
+  renderDayProgress();
+}
+
+function renderDayProgress(){
+  const hoje=new Date().toISOString().split('T')[0];
+  const reg=registros.find(r=>r.data===hoje);
+  const checks=reg?.checks||{};
+  const habitosFeitos=perfil.habitos.length>0?perfil.habitos.every((_,i)=>checks[i]):null;
+  const habitosParcial=perfil.habitos.length>0?perfil.habitos.filter((_,i)=>checks[i]).length:0;
+
+  const itens=[
+    {icon:'📸',label:'Foto',done:!!(reg?.foto_rosto||reg?.foto_corpo||fotoRostoFile||fotoCorpoFile)},
+    {icon:'⚖️',label:'Peso',done:!!(reg?.peso||document.getElementById('pesoInput').value)},
+    {icon:'📏',label:'Cintura',done:!!(reg?.abdomen||document.getElementById('abdomenInput').value)},
+    {icon:'💊',label:`Hábitos ${habitosParcial}/${perfil.habitos.length}`,done:habitosFeitos===true},
+    {icon:'🏃',label:'Strava',done:!!(reg?.strava||ultimaAtividade)},
+  ];
+
+  const feitos=itens.filter(i=>i.done).length;
+  const pct=Math.round((feitos/itens.length)*100);
+  document.getElementById('dayPct').textContent=pct+'%';
+  document.getElementById('dayPct').style.color=pct===100?'#1D9E75':pct>=60?'#EF9F27':'#aaa';
+  document.getElementById('dayBar').style.width=pct+'%';
+  document.getElementById('dayBar').style.background=pct===100?'#1D9E75':pct>=60?'#EF9F27':'#bbb';
+  document.getElementById('dayItems').innerHTML=itens.map(i=>`<div class="day-item ${i.done?'done':'pending'}"><span class="day-item-icon">${i.icon}</span>${i.label}</div>`).join('');
 }
 
 // GAUGES
@@ -853,6 +956,7 @@ async function toggleCheck(idx){
   regHoje.checks[idx]=!regHoje.checks[idx];
   await sb.from('registros').update({checks:regHoje.checks}).eq('user_id',currentUser.id).eq('data',hoje);
   renderChecklist();
+  renderDayProgress();
 }
 
 function atualizarProgressoCheck(){
