@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -204,20 +203,52 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .secret-input-wrap{margin-top:10px;}
 .secret-input-wrap input{width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;font-family:monospace;}
 .secret-hint{font-size:12px;color:#aaa;margin-top:6px;line-height:1.5;}
-</style>
 
+/* TREINO */
+.treino-tabs{display:flex;gap:6px;margin-bottom:1rem;}
+.treino-tab{flex:1;padding:10px 6px;border:1.5px solid #e0e0e0;border-radius:12px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;color:#888;}
+.treino-tab.active{background:#1a1a1a;border-color:#1a1a1a;color:#fff;}
+.treino-tab:hover:not(.active){background:#f5f5f0;}
+.exercicio-card{background:#f9f9f7;border-radius:14px;padding:12px 14px;border:1px solid #ebebeb;margin-bottom:10px;}
+.exercicio-nome{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.exercicio-nome-text{flex:1;}
+.series-wrap{display:flex;flex-direction:column;gap:6px;}
+.serie-row{display:flex;align-items:center;gap:8px;}
+.serie-num{font-size:12px;font-weight:600;color:#aaa;min-width:22px;}
+.serie-input{flex:1;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;text-align:center;outline:none;background:#fff;}
+.serie-input:focus{border-color:#1D9E75;}
+.serie-label{font-size:11px;color:#aaa;text-align:center;min-width:30px;}
+.serie-del{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:0 2px;}
+.serie-del:hover{color:#D85A30;}
+.add-serie-btn{background:none;border:1.5px dashed #ddd;border-radius:8px;padding:6px;font-size:13px;color:#aaa;cursor:pointer;width:100%;margin-top:4px;transition:all 0.15s;}
+.add-serie-btn:hover{border-color:#1D9E75;color:#1D9E75;}
+.hist-treino-card{background:#f9f9f7;border-radius:14px;padding:12px 14px;border:1px solid #ebebeb;margin-bottom:10px;}
+.hist-treino-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hist-treino-data{font-size:14px;font-weight:600;}
+.hist-treino-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.tag-A{background:#e6f1fb;color:#185FA5;}
+.tag-B{background:#e8f5ef;color:#0F6E56;}
+.tag-C{background:#faeeda;color:#854F0B;}
+.hist-ex-row{font-size:13px;color:#666;margin-top:4px;display:flex;justify-content:space-between;}
+.hist-ex-nome{font-weight:500;color:#1a1a1a;}
+.hist-ex-carga{color:#1D9E75;font-weight:600;}
+.evolucao-carga{font-size:11px;color:#D85A30;margin-left:4px;}
+.evolucao-carga.up{color:#1D9E75;}
+.treino-resumo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;}
+.treino-stat{background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.treino-stat-val{font-size:20px;font-weight:700;color:#1a1a1a;}
+.treino-stat-lbl{font-size:11px;color:#aaa;margin-top:2px;}
+</style>
 </head>
 <body>
 
 <!-- Loading -->
-
 <div class="loading-screen" id="loadingScreen">
   <div class="spinner"></div>
   <p style="font-size:14px;color:#888;">Carregando...</p>
 </div>
 
 <!-- Login -->
-
 <div class="login-screen" id="loginScreen" style="display:none">
   <div class="login-logo">💪</div>
   <div class="login-title">Minha Evolução</div>
@@ -236,7 +267,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 </div>
 
 <!-- App principal -->
-
 <div id="mainApp" style="display:none">
   <div class="saving-indicator" id="savingIndicator">Salvando...</div>
 
@@ -249,233 +279,260 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="user-initials" id="userAvatar" onclick="confirmarLogout()"></div>
     </div>
 
-```
-<div class="tabs">
-  <button class="tab active" onclick="showTab('registrar')">Hoje</button>
-  <button class="tab" onclick="showTab('timeline')">Histórico</button>
-  <button class="tab" onclick="showTab('comparar')">Comparar</button>
-  <button class="tab" onclick="showTab('config')">Config</button>
-</div>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('registrar')">Hoje</button>
+      <button class="tab" onclick="showTab('timeline')">Histórico</button>
+      <button class="tab" onclick="showTab('comparar')">Comparar</button>
+      <button class="tab" onclick="showTab('treino')">Treino</button>
+      <button class="tab" onclick="showTab('config')">Config</button>
+    </div>
 
-<!-- TAB REGISTRAR -->
-<div id="tab-registrar">
-  <!-- Streaks duplos -->
-  <div class="streak-wrap">
-    <div class="streak-banner habitos">
-      <div class="streak-fire" id="streakFire">💊</div>
-      <div class="streak-info">
-        <div class="streak-num" id="streakNum">0</div>
-        <div class="streak-label">dias hábitos</div>
-        <div class="streak-sub" id="streakSub">Complete hoje!</div>
+    <!-- TAB REGISTRAR -->
+    <div id="tab-registrar">
+      <!-- Streaks duplos -->
+      <div class="streak-wrap">
+        <div class="streak-banner habitos">
+          <div class="streak-fire" id="streakFire">💊</div>
+          <div class="streak-info">
+            <div class="streak-num" id="streakNum">0</div>
+            <div class="streak-label">dias hábitos</div>
+            <div class="streak-sub" id="streakSub">Complete hoje!</div>
+          </div>
+        </div>
+        <div class="streak-banner strava">
+          <div class="streak-fire" id="streakExFire">🏃</div>
+          <div class="streak-info">
+            <div class="streak-num" id="streakExNum">0</div>
+            <div class="streak-label">dias treino</div>
+            <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
+          </div>
+        </div>
+      </div>
+      <!-- Barra de preenchimento do dia -->
+      <div class="day-progress-card">
+        <div class="day-progress-header">
+          <span class="day-progress-title">Registro de hoje</span>
+          <span class="day-progress-pct" id="dayPct">0%</span>
+        </div>
+        <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="dayBar" style="width:0%"></div></div>
+        <div class="day-progress-items" id="dayItems"></div>
+      </div>
+
+      <div class="gauge-card" id="gaugeCard" style="display:none">
+        <div class="gauge-grid">
+          <div id="imcBlock">
+            <div class="section-title">IMC</div>
+            <div class="gauge-valor" id="imcValor">--</div>
+            <div class="gauge-label" id="imcCat">--</div>
+            <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
+            <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
+            <div class="gauge-frase" id="imcFrase"></div>
+          </div>
+          <div id="cinBlock" style="display:none">
+            <div class="section-title">Cintura</div>
+            <div class="gauge-valor" id="cinValor">--</div>
+            <div class="gauge-label" id="cinCat">--</div>
+            <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
+            <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
+            <div class="gauge-frase" id="cinFrase"></div>
+          </div>
+        </div>
+        <div id="balancaPreview" style="display:none">
+          <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
+            <div class="section-title">Composição corporal</div>
+            <div class="balanca-extra" id="balancaPreviewGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="meta-card" id="metaCard" style="display:none">
+        <div class="section-title">Progresso nas metas</div>
+        <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
+        <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
+        <div id="metaGordBlock" style="display:none" class="meta-item"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Fotos de hoje</div>
+        <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
+          <span style="font-size:20px">🤳</span><span>Foto do rosto</span>
+        </button>
+        <input type="file" id="fotoRosto" accept="image/*" onchange="loadPreview(this,'prevRosto','wrapRosto')">
+        <div class="preview-wrap" id="wrapRosto">
+          <img id="prevRosto" alt="rosto">
+          <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
+        </div>
+        <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
+          <span style="font-size:20px">📷</span><span>Foto do corpo</span>
+        </button>
+        <input type="file" id="fotoCorpo" accept="image/*" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
+        <div class="preview-wrap" id="wrapCorpo">
+          <img id="prevCorpo" alt="corpo">
+          <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Medidas — balança</div>
+        <div class="input-row">
+          <label>Peso</label>
+          <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
+          <span>kg</span>
+        </div>
+        <div class="input-row">
+          <label>Cintura</label>
+          <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
+          <span>cm</span>
+        </div>
+        <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
+          <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
+          <div class="input-grid">
+            <div class="input-grid-item"><label>% Gordura</label><input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>% Músculo</label><input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>% Água</label><input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2"><div class="unit">%</div></div>
+            <div class="input-grid-item"><label>Metabolismo basal</label><input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108"><div class="unit">kcal</div></div>
+            <div class="input-grid-item"><label>Idade corporal</label><input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37"><div class="unit">anos</div></div>
+          </div>
+        </div>
+        <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Medicações e hábitos de hoje</div>
+        <div id="checklistWrap"></div>
+        <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
+        <div class="check-count" id="checkCount">0 de 0</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Strava — atividade de hoje</div>
+        <div id="stravaOff">
+          <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
+          <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
+          <div class="secret-input-wrap">
+            <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
+            <p class="secret-hint">Cole o Client Secret antes de conectar. Salvo na nuvem.</p>
+          </div>
+        </div>
+        <div id="stravaOn" style="display:none">
+          <div class="strava-status">
+            <span class="dot green"></span>
+            <span style="font-size:14px;font-weight:600;">Strava conectado</span>
+            <span class="badge">ativo</span>
+          </div>
+          <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
+          <button class="btn sm" onclick="syncStrava()">Atualizar</button>
+          <div id="anoTreinados"></div>
+        </div>
+      </div>
+
+      <div id="editandoBanner" style="display:none;background:#faeeda;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#854F0B;font-weight:500;text-align:center;"></div>
+      <button class="btn primary" onclick="salvarDia()" id="btnSalvar">Salvar registro de hoje</button>
+    </div>
+
+    <!-- TAB TIMELINE -->
+    <div id="tab-timeline" style="display:none">
+      <div class="card" id="resumoCard" style="display:none">
+        <div class="section-title">Resumo geral</div>
+        <div class="metric-row" id="resumoMetrics"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Histórico</div>
+        <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
       </div>
     </div>
-    <div class="streak-banner strava">
-      <div class="streak-fire" id="streakExFire">🏃</div>
-      <div class="streak-info">
-        <div class="streak-num" id="streakExNum">0</div>
-        <div class="streak-label">dias treino</div>
-        <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
+
+    <!-- TAB COMPARAR -->
+    <div id="tab-comparar" style="display:none">
+      <div class="card">
+        <div class="section-title">Comparar dois dias</div>
+        <div class="compare-selects">
+          <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
+          <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
+        </div>
+        <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
       </div>
     </div>
-  </div>
-  <!-- Barra de preenchimento do dia -->
-  <div class="day-progress-card">
-    <div class="day-progress-header">
-      <span class="day-progress-title">Registro de hoje</span>
-      <span class="day-progress-pct" id="dayPct">0%</span>
-    </div>
-    <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="dayBar" style="width:0%"></div></div>
-    <div class="day-progress-items" id="dayItems"></div>
-  </div>
 
-  <div class="gauge-card" id="gaugeCard" style="display:none">
-    <div class="gauge-grid">
-      <div id="imcBlock">
-        <div class="section-title">IMC</div>
-        <div class="gauge-valor" id="imcValor">--</div>
-        <div class="gauge-label" id="imcCat">--</div>
-        <div class="gauge-bar-wrap gauge-bar-imc"><div class="gauge-marker" id="imcMarker" style="left:0%"></div></div>
-        <div class="gauge-scale"><span>16</span><span>25</span><span>40</span></div>
-        <div class="gauge-frase" id="imcFrase"></div>
+
+    <!-- TAB TREINO -->
+    <div id="tab-treino" style="display:none">
+      <!-- Resumo -->
+      <div class="treino-resumo">
+        <div class="treino-stat"><div class="treino-stat-val" id="totalTreinos">0</div><div class="treino-stat-lbl">treinos total</div></div>
+        <div class="treino-stat"><div class="treino-stat-val" id="totalTreinosMes">0</div><div class="treino-stat-lbl">esse mês</div></div>
+        <div class="treino-stat"><div class="treino-stat-val" id="ultimoTreino">--</div><div class="treino-stat-lbl">último treino</div></div>
       </div>
-      <div id="cinBlock" style="display:none">
-        <div class="section-title">Cintura</div>
-        <div class="gauge-valor" id="cinValor">--</div>
-        <div class="gauge-label" id="cinCat">--</div>
-        <div class="gauge-bar-wrap gauge-bar-cin"><div class="gauge-marker" id="cinMarker" style="left:0%"></div></div>
-        <div class="gauge-scale"><span id="cinMin"></span><span id="cinMid"></span><span id="cinMax"></span></div>
-        <div class="gauge-frase" id="cinFrase"></div>
+
+      <!-- Selector A/B/C -->
+      <div class="treino-tabs">
+        <button class="treino-tab active" id="tabA" onclick="selecionarTreino('A')">💪 Treino A<br><small style="font-weight:400;font-size:10px;">Peito + Tríceps</small></button>
+        <button class="treino-tab" id="tabB" onclick="selecionarTreino('B')">🔙 Treino B<br><small style="font-weight:400;font-size:10px;">Costas + Bíceps</small></button>
+        <button class="treino-tab" id="tabC" onclick="selecionarTreino('C')">🦵 Treino C<br><small style="font-weight:400;font-size:10px;">Pernas + Ombro</small></button>
       </div>
-    </div>
-    <div id="balancaPreview" style="display:none">
-      <div style="border-top:1px solid #f0f0ec;margin-top:14px;padding-top:14px;">
-        <div class="section-title">Composição corporal</div>
-        <div class="balanca-extra" id="balancaPreviewGrid"></div>
+
+      <!-- Exercícios do treino selecionado -->
+      <div id="exerciciosWrap"></div>
+
+      <button class="btn primary" onclick="salvarTreino()" id="btnSalvarTreino">Salvar treino de hoje</button>
+
+      <!-- Histórico de treinos -->
+      <div class="card" style="margin-top:1rem;">
+        <div class="section-title">Histórico de treinos</div>
+        <div id="histTreinoList"><div class="empty">Nenhum treino registrado ainda.</div></div>
       </div>
     </div>
-  </div>
 
-  <div class="meta-card" id="metaCard" style="display:none">
-    <div class="section-title">Progresso nas metas</div>
-    <div id="metaPesoBlock" style="display:none" class="meta-item"></div>
-    <div id="metaAbdBlock" style="display:none" class="meta-item"></div>
-    <div id="metaGordBlock" style="display:none" class="meta-item"></div>
-  </div>
+    <!-- TAB CONFIG -->
+    <div id="tab-config" style="display:none">
+      <div class="card">
+        <div class="section-title">Seus dados fixos</div>
+        <div class="input-row"><label>Altura</label><input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" onchange="salvarPerfil()"><span>cm</span></div>
+        <div class="input-row" style="margin-bottom:8px">
+          <label>Sexo biológico</label>
+          <select id="sexoConfig" onchange="salvarPerfil()" style="flex:1;padding:10px;font-size:14px;">
+            <option value="">Selecione</option>
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+        <div class="input-row" style="margin-bottom:0"><label>Idade real</label><input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" onchange="salvarPerfil()"><span>anos</span></div>
+      </div>
 
-  <div class="card">
-    <div class="section-title">Fotos de hoje</div>
-    <button class="cam-btn" onclick="document.getElementById('fotoRosto').click()">
-      <span style="font-size:20px">🤳</span><span>Foto do rosto</span>
-    </button>
-    <input type="file" id="fotoRosto" accept="image/*" onchange="loadPreview(this,'prevRosto','wrapRosto')">
-    <div class="preview-wrap" id="wrapRosto">
-      <img id="prevRosto" alt="rosto">
-      <button class="preview-del" onclick="clearPhoto('prevRosto','wrapRosto','fotoRosto')">✕</button>
-    </div>
-    <button class="cam-btn" onclick="document.getElementById('fotoCorpo').click()">
-      <span style="font-size:20px">📷</span><span>Foto do corpo</span>
-    </button>
-    <input type="file" id="fotoCorpo" accept="image/*" onchange="loadPreview(this,'prevCorpo','wrapCorpo')">
-    <div class="preview-wrap" id="wrapCorpo">
-      <img id="prevCorpo" alt="corpo">
-      <button class="preview-del" onclick="clearPhoto('prevCorpo','wrapCorpo','fotoCorpo')">✕</button>
-    </div>
-  </div>
+      <div class="card">
+        <div class="section-title">Minhas metas</div>
+        <div class="input-row"><label>Meta peso</label><input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" onchange="salvarPerfil()"><span>kg</span></div>
+        <div class="input-row"><label>Meta cintura</label><input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" onchange="salvarPerfil()"><span>cm</span></div>
+        <div class="input-row" style="margin-bottom:0"><label>Meta gordura</label><input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" onchange="salvarPerfil()"><span>%</span></div>
+        <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente na nuvem.</p>
+      </div>
 
-  <div class="card">
-    <div class="section-title">Medidas — balança</div>
-    <div class="input-row">
-      <label>Peso</label>
-      <input type="number" id="pesoInput" min="30" max="300" step="0.1" placeholder="85.5" oninput="calcularGauges()">
-      <span>kg</span>
-    </div>
-    <div class="input-row">
-      <label>Cintura</label>
-      <input type="number" id="abdomenInput" min="40" max="200" step="0.5" placeholder="opcional" oninput="calcularGauges()">
-      <span>cm</span>
-    </div>
-    <div style="border-top:1px solid #f5f5f0;margin:4px 0 12px;padding-top:12px;">
-      <div style="font-size:12px;font-weight:600;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">Composição corporal (opcional)</div>
-      <div class="input-grid">
-        <div class="input-grid-item"><label>% Gordura</label><input type="number" id="gorduraInput" min="1" max="70" step="0.1" placeholder="33.8" oninput="calcularGauges()"><div class="unit">%</div></div>
-        <div class="input-grid-item"><label>% Músculo</label><input type="number" id="musculoInput" min="10" max="80" step="0.1" placeholder="62.8"><div class="unit">%</div></div>
-        <div class="input-grid-item"><label>% Água</label><input type="number" id="aguaInput" min="20" max="80" step="0.1" placeholder="47.2"><div class="unit">%</div></div>
-        <div class="input-grid-item"><label>Metabolismo basal</label><input type="number" id="metabolismoInput" min="800" max="5000" step="1" placeholder="2108"><div class="unit">kcal</div></div>
-        <div class="input-grid-item"><label>Idade corporal</label><input type="number" id="idadeCorporalInput" min="10" max="80" step="1" placeholder="37"><div class="unit">anos</div></div>
+      <div class="card">
+        <div class="section-title">Medicações e hábitos</div>
+        <div id="habitosListConfig"></div>
+        <div class="add-habito-row">
+          <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
+          <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Lembretes</div>
+        <div class="notif-row"><label>Lembrete diário às 20h</label><button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button></div>
+        <div class="notif-row"><label>Foto semanal (domingo)</label><button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Conta</div>
+        <p id="userEmail" style="font-size:14px;color:#888;margin-bottom:10px;"></p>
+        <button class="btn danger" onclick="confirmarLogout()">Sair da conta</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Sobre</div>
+        <p style="font-size:13px;color:#888;line-height:1.6;">Seus dados e fotos são salvos com segurança na nuvem. Acesse de qualquer dispositivo fazendo login com o mesmo Google.</p>
       </div>
     </div>
-    <div id="ultimoPesoInfo" style="font-size:12px;color:#aaa;"></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Medicações e hábitos de hoje</div>
-    <div id="checklistWrap"></div>
-    <div class="check-progress"><div class="check-progress-bar" id="checkBar" style="width:0%"></div></div>
-    <div class="check-count" id="checkCount">0 de 0</div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Strava — atividade de hoje</div>
-    <div id="stravaOff">
-      <p style="font-size:13px;color:#aaa;margin-bottom:10px;">Conecte o Strava para registrar exercícios automaticamente.</p>
-      <button class="btn strava" onclick="connectStrava()">Conectar com Strava</button>
-      <div class="secret-input-wrap">
-        <input type="password" id="clientSecretInput" placeholder="Client Secret do Strava">
-        <p class="secret-hint">Cole o Client Secret antes de conectar. Salvo na nuvem.</p>
-      </div>
-    </div>
-    <div id="stravaOn" style="display:none">
-      <div class="strava-status">
-        <span class="dot green"></span>
-        <span style="font-size:14px;font-weight:600;">Strava conectado</span>
-        <span class="badge">ativo</span>
-      </div>
-      <p id="stravaActInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Buscando atividades...</p>
-      <button class="btn sm" onclick="syncStrava()">Atualizar</button>
-      <div id="anoTreinados"></div>
-    </div>
-  </div>
-
-  <div id="editandoBanner" style="display:none;background:#faeeda;border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#854F0B;font-weight:500;text-align:center;"></div>
-  <button class="btn primary" onclick="salvarDia()" id="btnSalvar">Salvar registro de hoje</button>
-</div>
-
-<!-- TAB TIMELINE -->
-<div id="tab-timeline" style="display:none">
-  <div class="card" id="resumoCard" style="display:none">
-    <div class="section-title">Resumo geral</div>
-    <div class="metric-row" id="resumoMetrics"></div>
-  </div>
-  <div class="card">
-    <div class="section-title">Histórico</div>
-    <div class="timeline" id="timelineList"><div class="empty">Nenhum registro ainda.<br>Comece hoje! 💪</div></div>
-  </div>
-</div>
-
-<!-- TAB COMPARAR -->
-<div id="tab-comparar" style="display:none">
-  <div class="card">
-    <div class="section-title">Comparar dois dias</div>
-    <div class="compare-selects">
-      <select id="cmpA" onchange="renderCompare()"><option value="">Data A</option></select>
-      <select id="cmpB" onchange="renderCompare()"><option value="">Data B</option></select>
-    </div>
-    <div id="compareResult"><p style="text-align:center;font-size:13px;color:#aaa;">Selecione duas datas</p></div>
-  </div>
-</div>
-
-<!-- TAB CONFIG -->
-<div id="tab-config" style="display:none">
-  <div class="card">
-    <div class="section-title">Seus dados fixos</div>
-    <div class="input-row"><label>Altura</label><input type="number" id="alturaConfig" min="100" max="250" step="1" placeholder="175" onchange="salvarPerfil()"><span>cm</span></div>
-    <div class="input-row" style="margin-bottom:8px">
-      <label>Sexo biológico</label>
-      <select id="sexoConfig" onchange="salvarPerfil()" style="flex:1;padding:10px;font-size:14px;">
-        <option value="">Selecione</option>
-        <option value="M">Masculino</option>
-        <option value="F">Feminino</option>
-      </select>
-    </div>
-    <div class="input-row" style="margin-bottom:0"><label>Idade real</label><input type="number" id="idadeConfig" min="10" max="100" step="1" placeholder="35" onchange="salvarPerfil()"><span>anos</span></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Minhas metas</div>
-    <div class="input-row"><label>Meta peso</label><input type="number" id="metaPesoConfig" min="30" max="300" step="0.1" placeholder="ex: 80" onchange="salvarPerfil()"><span>kg</span></div>
-    <div class="input-row"><label>Meta cintura</label><input type="number" id="metaAbdConfig" min="40" max="200" step="0.5" placeholder="ex: 94" onchange="salvarPerfil()"><span>cm</span></div>
-    <div class="input-row" style="margin-bottom:0"><label>Meta gordura</label><input type="number" id="metaGordConfig" min="5" max="50" step="0.1" placeholder="ex: 20" onchange="salvarPerfil()"><span>%</span></div>
-    <p style="font-size:12px;color:#aaa;margin-top:10px;">Salvas automaticamente na nuvem.</p>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Medicações e hábitos</div>
-    <div id="habitosListConfig"></div>
-    <div class="add-habito-row">
-      <input type="text" id="novoHabitoInput" placeholder="Ex: Vitamina D 2000UI" maxlength="50">
-      <button class="btn sm green" onclick="adicionarHabito()">+ Adicionar</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Lembretes</div>
-    <div class="notif-row"><label>Lembrete diário às 20h</label><button class="btn sm" onclick="pedirNotificacao('diario')">Ativar</button></div>
-    <div class="notif-row"><label>Foto semanal (domingo)</label><button class="btn sm" onclick="pedirNotificacao('semanal')">Ativar</button></div>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Conta</div>
-    <p id="userEmail" style="font-size:14px;color:#888;margin-bottom:10px;"></p>
-    <button class="btn danger" onclick="confirmarLogout()">Sair da conta</button>
-  </div>
-
-  <div class="card">
-    <div class="section-title">Sobre</div>
-    <p style="font-size:13px;color:#888;line-height:1.6;">Seus dados e fotos são salvos com segurança na nuvem. Acesse de qualquer dispositivo fazendo login com o mesmo Google.</p>
-  </div>
-</div>
-```
-
   </div>
 </div>
 
@@ -554,6 +611,8 @@ async function onLogin(user){
   renderMetas();
   mostrarUltimoPeso();
   if(perfil.strava_token){atualizarUIStrava(true);await syncStrava();}
+  // pré-carrega histórico de treino
+  await carregarHistoricoTreino();
 }
 
 function confirmarLogout(){
@@ -1076,11 +1135,283 @@ function openModal(src){document.getElementById('modalImg').src=src;document.get
 function closeModal(){document.getElementById('modalBg').classList.remove('open');}
 
 function showTab(tab){
-  ['registrar','timeline','comparar','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','config'][i]===tab);});
+  ['registrar','timeline','comparar','treino','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','treino','config'][i]===tab);});
   if(tab==='timeline')renderTimeline();
   if(tab==='comparar')renderCompareSelects();
+  if(tab==='treino')initTreino();
   if(tab==='config')carregarConfig();
+}
+
+
+// TREINO
+const EXERCICIOS_DEFAULT = {
+  A: [
+    {nome:'Supino Reto',grupo:'Peito'},
+    {nome:'Supino Inclinado',grupo:'Peito'},
+    {nome:'Crucifixo',grupo:'Peito'},
+    {nome:'Peck Deck',grupo:'Peito'},
+    {nome:'Tríceps Pulley',grupo:'Tríceps'},
+    {nome:'Tríceps Testa',grupo:'Tríceps'},
+    {nome:'Mergulho (Dips)',grupo:'Tríceps'},
+  ],
+  B: [
+    {nome:'Puxada Frontal',grupo:'Costas'},
+    {nome:'Remada Curvada',grupo:'Costas'},
+    {nome:'Remada Sentada',grupo:'Costas'},
+    {nome:'Pull Down',grupo:'Costas'},
+    {nome:'Rosca Direta',grupo:'Bíceps'},
+    {nome:'Rosca Martelo',grupo:'Bíceps'},
+    {nome:'Rosca Concentrada',grupo:'Bíceps'},
+  ],
+  C: [
+    {nome:'Leg Press',grupo:'Pernas'},
+    {nome:'Agachamento',grupo:'Pernas'},
+    {nome:'Extensão de Perna',grupo:'Pernas'},
+    {nome:'Flexão de Perna',grupo:'Pernas'},
+    {nome:'Panturrilha',grupo:'Pernas'},
+    {nome:'Desenvolvimento',grupo:'Ombro'},
+    {nome:'Elevação Lateral',grupo:'Ombro'},
+  ]
+};
+
+let treinoAtual = 'A';
+let exerciciosCatalogo = {A:[], B:[], C:[]};
+let sessoesHistorico = [];
+let treinoForm = {}; // {exercicio_id: [{reps, carga}]}
+
+async function initTreino(){
+  await carregarExercicios();
+  await carregarHistoricoTreino();
+  selecionarTreino('A');
+  renderResumoTreino();
+}
+
+async function carregarExercicios(){
+  const{data}=await sb.from('exercicios').select('*').eq('user_id',currentUser.id).order('ordem');
+  if(data && data.length > 0){
+    exerciciosCatalogo = {A:[], B:[], C:[]};
+    data.forEach(e => {
+      if(exerciciosCatalogo[e.grupo_muscular]) exerciciosCatalogo[e.grupo_muscular].push(e);
+    });
+  } else {
+    // cadastra exercícios default
+    await cadastrarExerciciosDefault();
+  }
+}
+
+async function cadastrarExerciciosDefault(){
+  const rows = [];
+  ['A','B','C'].forEach(g => {
+    EXERCICIOS_DEFAULT[g].forEach((e, i) => {
+      rows.push({user_id:currentUser.id, nome:e.nome, grupo_muscular:g, ordem:i});
+    });
+  });
+  const{data}=await sb.from('exercicios').insert(rows).select();
+  if(data){
+    exerciciosCatalogo = {A:[], B:[], C:[]};
+    data.forEach(e => { if(exerciciosCatalogo[e.grupo_muscular]) exerciciosCatalogo[e.grupo_muscular].push(e); });
+  }
+}
+
+async function carregarHistoricoTreino(){
+  const{data}=await sb.from('sessoes_treino').select(`*, series_treino(*, exercicios(nome))`).eq('user_id',currentUser.id).order('data',{ascending:false}).limit(30);
+  if(data) sessoesHistorico = data;
+  renderHistoricoTreino();
+}
+
+function selecionarTreino(grupo){
+  treinoAtual = grupo;
+  treinoForm = {};
+  ['A','B','C'].forEach(g => {
+    document.getElementById('tab'+g).classList.toggle('active', g===grupo);
+  });
+  renderExercicios();
+}
+
+function getUltimaSerie(exercicioId){
+  // busca a última carga usada nesse exercício
+  for(const s of sessoesHistorico){
+    if(s.series_treino){
+      const series = s.series_treino.filter(sr => sr.exercicio_id === exercicioId);
+      if(series.length > 0){
+        const ultima = series[series.length-1];
+        return {reps: ultima.reps, carga: ultima.carga};
+      }
+    }
+  }
+  return null;
+}
+
+function renderExercicios(){
+  const wrap = document.getElementById('exerciciosWrap');
+  const exs = exerciciosCatalogo[treinoAtual] || [];
+  if(!exs.length){ wrap.innerHTML = '<div class="card"><p style="color:#aaa;font-size:14px;">Nenhum exercício cadastrado.</p></div>'; return; }
+
+  wrap.innerHTML = exs.map(ex => {
+    if(!treinoForm[ex.id]) treinoForm[ex.id] = [{reps:'',carga:''}];
+    const ultima = getUltimaSerie(ex.id);
+    const ultimaHtml = ultima ? `<span style="font-size:11px;color:#aaa;font-weight:400;">${ultima.carga}kg × ${ultima.reps}</span>` : '';
+    return `<div class="exercicio-card">
+      <div class="exercicio-nome">
+        <div class="exercicio-nome-text">${ex.nome} ${ultimaHtml}</div>
+        <span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#f0f0ec;color:#888;">${ex.grupo}</span>
+      </div>
+      <div class="series-wrap" id="series_${ex.id}">
+        ${renderSeriesRows(ex.id)}
+      </div>
+      <button class="add-serie-btn" onclick="addSerie('${ex.id}')">+ Adicionar série</button>
+    </div>`;
+  }).join('');
+}
+
+function renderSeriesRows(exId){
+  const series = treinoForm[exId] || [];
+  return series.map((s, i) => `
+    <div class="serie-row" id="serie_${exId}_${i}">
+      <span class="serie-num">${i+1}ª</span>
+      <input class="serie-input" type="number" placeholder="kg" step="0.5" value="${s.carga||''}" onchange="updateSerie('${exId}',${i},'carga',this.value)">
+      <span class="serie-label">kg</span>
+      <input class="serie-input" type="number" placeholder="reps" value="${s.reps||''}" onchange="updateSerie('${exId}',${i},'reps',this.value)">
+      <span class="serie-label">rep</span>
+      ${i>0?`<button class="serie-del" onclick="removeSerie('${exId}',${i})">✕</button>`:'<span style="width:20px"></span>'}
+    </div>`).join('');
+}
+
+function updateSerie(exId, idx, campo, val){
+  if(!treinoForm[exId]) treinoForm[exId] = [];
+  if(!treinoForm[exId][idx]) treinoForm[exId][idx] = {};
+  treinoForm[exId][idx][campo] = val ? parseFloat(val) : '';
+}
+
+function addSerie(exId){
+  if(!treinoForm[exId]) treinoForm[exId] = [];
+  // pré-preenche com valores da série anterior
+  const ultima = treinoForm[exId][treinoForm[exId].length-1];
+  treinoForm[exId].push({reps: ultima?.reps||'', carga: ultima?.carga||''});
+  document.getElementById('series_'+exId).innerHTML = renderSeriesRows(exId);
+}
+
+function removeSerie(exId, idx){
+  treinoForm[exId].splice(idx, 1);
+  document.getElementById('series_'+exId).innerHTML = renderSeriesRows(exId);
+}
+
+async function salvarTreino(){
+  const hoje = hojeLocal();
+  const btn = document.getElementById('btnSalvarTreino');
+  // valida se tem ao menos uma série preenchida
+  const exs = exerciciosCatalogo[treinoAtual] || [];
+  let temDado = false;
+  exs.forEach(ex => {
+    (treinoForm[ex.id]||[]).forEach(s => { if(s.carga || s.reps) temDado = true; });
+  });
+  if(!temDado){ toast('Preencha ao menos uma série'); return; }
+
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  showSaving(true);
+
+  // cria sessão
+  const{data:sessao, error}=await sb.from('sessoes_treino').upsert({
+    user_id:currentUser.id, data:hoje, treino:treinoAtual
+  },{onConflict:'user_id,data,treino'}).select().single();
+
+  if(error){ toast('Erro ao salvar treino'); console.error(error); btn.textContent='Salvar treino de hoje'; btn.disabled=false; showSaving(false); return; }
+
+  // deleta séries antigas da sessão pra recriar
+  await sb.from('series_treino').delete().eq('sessao_id', sessao.id);
+
+  // insere séries
+  const seriesRows = [];
+  exs.forEach(ex => {
+    (treinoForm[ex.id]||[]).forEach((s, i) => {
+      if(s.carga || s.reps){
+        seriesRows.push({
+          user_id: currentUser.id,
+          sessao_id: sessao.id,
+          exercicio_id: ex.id,
+          serie_num: i+1,
+          reps: s.reps ? parseInt(s.reps) : null,
+          carga: s.carga ? parseFloat(s.carga) : null
+        });
+      }
+    });
+  });
+
+  if(seriesRows.length > 0) await sb.from('series_treino').insert(seriesRows);
+
+  await carregarHistoricoTreino();
+  renderResumoTreino();
+  calcularStreak();
+  toast('Treino salvo! 💪');
+  btn.textContent='Salvar treino de hoje'; btn.disabled=false; showSaving(false);
+}
+
+function renderResumoTreino(){
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = hojeLocal().substring(0,7);
+  document.getElementById('totalTreinos').textContent = sessoesHistorico.length;
+  document.getElementById('totalTreinosMes').textContent = sessoesHistorico.filter(s=>s.data.startsWith(mesAtual)).length;
+  if(sessoesHistorico.length > 0){
+    const d = new Date(sessoesHistorico[0].data+'T12:00:00');
+    document.getElementById('ultimoTreino').textContent = d.toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  }
+}
+
+function renderHistoricoTreino(){
+  const list = document.getElementById('histTreinoList');
+  if(!sessoesHistorico.length){ list.innerHTML='<div class="empty">Nenhum treino registrado ainda.</div>'; return; }
+
+  list.innerHTML = sessoesHistorico.map(s => {
+    const d = new Date(s.data+'T12:00:00');
+    const label = d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+    const series = s.series_treino || [];
+
+    // agrupa por exercício
+    const porEx = {};
+    series.forEach(sr => {
+      const nome = sr.exercicios?.nome || 'Exercício';
+      if(!porEx[nome]) porEx[nome] = [];
+      porEx[nome].push(sr);
+    });
+
+    const exHtml = Object.entries(porEx).map(([nome, srs]) => {
+      const maxCarga = Math.max(...srs.map(s=>s.carga||0));
+      const totalReps = srs.reduce((acc,s)=>acc+(s.reps||0),0);
+      // busca carga anterior do mesmo exercício
+      const exAnterior = buscarCargaAnterior(s.data, nome);
+      let evolHtml = '';
+      if(exAnterior && maxCarga > 0){
+        const dif = maxCarga - exAnterior;
+        if(dif > 0) evolHtml = `<span class="evolucao-carga up">▲ +${dif}kg</span>`;
+        else if(dif < 0) evolHtml = `<span class="evolucao-carga">▼ ${dif}kg</span>`;
+      }
+      return `<div class="hist-ex-row">
+        <span class="hist-ex-nome">${nome}</span>
+        <span><span class="hist-ex-carga">${maxCarga>0?maxCarga+'kg':''}</span> ${totalReps>0?`× ${totalReps} reps`:''} ${evolHtml}</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="hist-treino-card">
+      <div class="hist-treino-header">
+        <span class="hist-treino-data">${label}</span>
+        <span class="hist-treino-tag tag-${s.treino}">Treino ${s.treino}</span>
+      </div>
+      ${exHtml}
+    </div>`;
+  }).join('');
+}
+
+function buscarCargaAnterior(dataAtual, nomeEx){
+  // busca a carga máxima do mesmo exercício numa sessão anterior
+  const anteriores = sessoesHistorico.filter(s => s.data < dataAtual);
+  for(const s of anteriores){
+    const series = (s.series_treino||[]).filter(sr => sr.exercicios?.nome === nomeEx);
+    if(series.length > 0){
+      return Math.max(...series.map(sr=>sr.carga||0));
+    }
+  }
+  return null;
 }
 
 // STRAVA
@@ -1211,6 +1542,5 @@ async function start(){
 }
 start();
 </script>
-
 </body>
 </html>
