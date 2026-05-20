@@ -213,15 +213,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .exercicio-nome{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
 .exercicio-nome-text{flex:1;}
 .series-wrap{display:flex;flex-direction:column;gap:6px;}
-.serie-row{display:flex;align-items:center;gap:8px;}
-.serie-num{font-size:12px;font-weight:600;color:#aaa;min-width:22px;}
-.serie-input{flex:1;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;text-align:center;outline:none;background:#fff;}
-.serie-input:focus{border-color:#1D9E75;}
-.serie-label{font-size:11px;color:#aaa;text-align:center;min-width:30px;}
-.serie-del{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:0 2px;}
+.serie-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f5f5f0;}
+.serie-row:last-child{border-bottom:none;}
+.serie-num{font-size:12px;font-weight:700;color:#aaa;min-width:20px;}
+.serie-bloco{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
+.serie-bloco-label{font-size:10px;color:#aaa;font-weight:600;text-transform:uppercase;}
+.serie-stepper{display:flex;align-items:center;gap:0;border:1.5px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fff;}
+.stepper-btn{width:38px;height:38px;border:none;background:transparent;font-size:20px;cursor:pointer;color:#1a1a1a;display:flex;align-items:center;justify-content:center;transition:background 0.1s;flex-shrink:0;}
+.stepper-btn:active{background:#f0f0ec;}
+.stepper-val{min-width:44px;text-align:center;font-size:15px;font-weight:700;color:#1a1a1a;padding:0 2px;}
+.serie-del{background:none;border:none;cursor:pointer;color:#ddd;font-size:18px;padding:0 2px;flex-shrink:0;}
 .serie-del:hover{color:#D85A30;}
-.add-serie-btn{background:none;border:1.5px dashed #ddd;border-radius:8px;padding:6px;font-size:13px;color:#aaa;cursor:pointer;width:100%;margin-top:4px;transition:all 0.15s;}
+.add-serie-btn{background:none;border:1.5px dashed #ddd;border-radius:10px;padding:8px;font-size:13px;color:#aaa;cursor:pointer;width:100%;margin-top:8px;transition:all 0.15s;}
 .add-serie-btn:hover{border-color:#1D9E75;color:#1D9E75;}
+.serie-feita .serie-stepper{border-color:#1D9E75;}
+.serie-feita .stepper-val{color:#1D9E75;}
 .hist-treino-card{background:#f9f9f7;border-radius:14px;padding:12px 14px;border:1px solid #ebebeb;margin-bottom:10px;}
 .hist-treino-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .hist-treino-data{font-size:14px;font-weight:600;}
@@ -1249,13 +1255,14 @@ function renderExercicios(){
   if(!exs.length){ wrap.innerHTML = '<div class="card"><p style="color:#aaa;font-size:14px;">Nenhum exercício cadastrado.</p></div>'; return; }
 
   wrap.innerHTML = exs.map(ex => {
-    if(!treinoForm[ex.id]) treinoForm[ex.id] = [{reps:'',carga:''}];
+    if(!treinoForm[ex.id]) treinoForm[ex.id] = [{reps:0,carga:0}];
     const ultima = getUltimaSerie(ex.id);
     const ultimaHtml = ultima ? `<span style="font-size:11px;color:#aaa;font-weight:400;">${ultima.carga}kg × ${ultima.reps}</span>` : '';
+    const grupoNome = ex.grupo || EXERCICIOS_DEFAULT[treinoAtual]?.find(e=>e.nome===ex.nome)?.grupo || ex.grupo_muscular || '';
     return `<div class="exercicio-card">
       <div class="exercicio-nome">
         <div class="exercicio-nome-text">${ex.nome} ${ultimaHtml}</div>
-        <span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#f0f0ec;color:#888;">${ex.grupo}</span>
+        ${grupoNome?`<span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#f0f0ec;color:#888;">${grupoNome}</span>`:''}
       </div>
       <div class="series-wrap" id="series_${ex.id}">
         ${renderSeriesRows(ex.id)}
@@ -1267,28 +1274,66 @@ function renderExercicios(){
 
 function renderSeriesRows(exId){
   const series = treinoForm[exId] || [];
-  return series.map((s, i) => `
-    <div class="serie-row" id="serie_${exId}_${i}">
+  return series.map((s, i) => {
+    const carga = s.carga || 0;
+    const reps = s.reps || 0;
+    const feita = carga > 0 && reps > 0;
+    return `<div class="serie-row ${feita?'serie-feita':''}" id="serie_${exId}_${i}">
       <span class="serie-num">${i+1}ª</span>
-      <input class="serie-input" type="number" placeholder="kg" step="0.5" value="${s.carga||''}" onchange="updateSerie('${exId}',${i},'carga',this.value)">
-      <span class="serie-label">kg</span>
-      <input class="serie-input" type="number" placeholder="reps" value="${s.reps||''}" onchange="updateSerie('${exId}',${i},'reps',this.value)">
-      <span class="serie-label">rep</span>
+      <div class="serie-bloco">
+        <span class="serie-bloco-label">Carga</span>
+        <div class="serie-stepper">
+          <button class="stepper-btn" onclick="stepSerie('${exId}',${i},'carga',-2.5)">−</button>
+          <span class="stepper-val" id="val_carga_${exId}_${i}">${carga > 0 ? carga+'kg' : '—'}</span>
+          <button class="stepper-btn" onclick="stepSerie('${exId}',${i},'carga',2.5)">+</button>
+        </div>
+      </div>
+      <div class="serie-bloco">
+        <span class="serie-bloco-label">Reps</span>
+        <div class="serie-stepper">
+          <button class="stepper-btn" onclick="stepSerie('${exId}',${i},'reps',-1)">−</button>
+          <span class="stepper-val" id="val_reps_${exId}_${i}">${reps > 0 ? reps : '—'}</span>
+          <button class="stepper-btn" onclick="stepSerie('${exId}',${i},'reps',1)">+</button>
+        </div>
+      </div>
       ${i>0?`<button class="serie-del" onclick="removeSerie('${exId}',${i})">✕</button>`:'<span style="width:20px"></span>'}
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function stepSerie(exId, idx, campo, step){
+  if(!treinoForm[exId]) treinoForm[exId] = [];
+  if(!treinoForm[exId][idx]) treinoForm[exId][idx] = {carga:0, reps:0};
+  const atual = treinoForm[exId][idx][campo] || 0;
+  const novo = Math.max(0, parseFloat((atual + step).toFixed(1)));
+  treinoForm[exId][idx][campo] = novo;
+  // atualiza só o valor sem re-renderizar tudo
+  const el = document.getElementById(`val_${campo}_${exId}_${idx}`);
+  if(el){
+    if(campo === 'carga') el.textContent = novo > 0 ? novo+'kg' : '—';
+    else el.textContent = novo > 0 ? novo : '—';
+    // marca série como feita se ambos preenchidos
+    const row = el.closest('.serie-row');
+    const c = treinoForm[exId][idx].carga || 0;
+    const r = treinoForm[exId][idx].reps || 0;
+    if(row) row.classList.toggle('serie-feita', c > 0 && r > 0);
+    // atualiza cor do stepper
+    const steppers = row?.querySelectorAll('.serie-stepper');
+    if(steppers) steppers.forEach(s => s.style.borderColor = (c>0&&r>0)?'#1D9E75':'#e0e0e0');
+  }
 }
 
 function updateSerie(exId, idx, campo, val){
   if(!treinoForm[exId]) treinoForm[exId] = [];
   if(!treinoForm[exId][idx]) treinoForm[exId][idx] = {};
-  treinoForm[exId][idx][campo] = val ? parseFloat(val) : '';
+  treinoForm[exId][idx][campo] = val ? parseFloat(val) : 0;
 }
 
 function addSerie(exId){
   if(!treinoForm[exId]) treinoForm[exId] = [];
   // pré-preenche com valores da série anterior
   const ultima = treinoForm[exId][treinoForm[exId].length-1];
-  treinoForm[exId].push({reps: ultima?.reps||'', carga: ultima?.carga||''});
+  treinoForm[exId].push({reps: ultima?.reps||0, carga: ultima?.carga||0});
   document.getElementById('series_'+exId).innerHTML = renderSeriesRows(exId);
 }
 
@@ -1364,7 +1409,8 @@ function renderHistoricoTreino(){
 
   list.innerHTML = sessoesHistorico.map(s => {
     const d = new Date(s.data+'T12:00:00');
-    const label = d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+    const isHoje = s.data === hojeLocal();
+    const label = isHoje ? 'Hoje' : d.toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
     const series = s.series_treino || [];
 
     // agrupa por exercício
