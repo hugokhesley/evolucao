@@ -840,17 +840,19 @@ function calcularStreak(){
     document.getElementById('streakSub').textContent=hojeCompleto?'Hábitos ok! ✓':'Complete hoje!';
   }
 
-  // --- Streak de exercícios (Strava) ---
+  // --- Streak de exercícios (Strava OU treino de musculação) ---
+  const datasTreinadas = new Set();
+  registros.forEach(r => { if(r.strava) datasTreinadas.add(r.data); });
+  sessoesHistorico.forEach(s => { datasTreinadas.add(s.data); });
+
   let streakEx=0;
-  const regHojeEx=sorted.find(r=>r.data===hoje);
-  const treinouHoje=!!(regHojeEx?.strava);
+  const treinouHoje=datasTreinadas.has(hoje);
   let dataVerifEx=new Date();
   if(!treinouHoje)dataVerifEx.setDate(dataVerifEx.getDate()-1);
   for(let i=0;i<365;i++){
     const d=new Date(dataVerifEx);d.setDate(d.getDate()-i);
-    const dStr=d.toISOString().split('T')[0];
-    const reg=sorted.find(r=>r.data===dStr);
-    if(reg&&reg.strava)streakEx++;
+    const dStr=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(datasTreinadas.has(dStr))streakEx++;
     else break;
   }
   if(treinouHoje)streakEx=Math.max(streakEx,1);
@@ -858,8 +860,11 @@ function calcularStreak(){
   document.getElementById('streakExFire').textContent=streakEx===0?'🏃':streakEx<7?'⚡':streakEx<14?'💪':streakEx<30?'🔥':'🏆';
   document.getElementById('streakExSub').textContent=treinouHoje?'Treinou hoje! ✓':'Sem treino hoje';
 
-  // --- Acumulado do ano de exercícios (renderizado em outro lugar) ---
-  const diasTreinados=registros.filter(r=>r.strava&&r.data.startsWith(String(anoAtual))).length;
+  // --- Acumulado do ano (Strava + Treino) ---
+  const datasAno = new Set();
+  registros.forEach(r => { if(r.strava && r.data.startsWith(String(anoAtual))) datasAno.add(r.data); });
+  sessoesHistorico.forEach(s => { if(s.data.startsWith(String(anoAtual))) datasAno.add(s.data); });
+  const diasTreinados = datasAno.size;
   const elAno=document.getElementById('anoTreinados');
   if(elAno){
     const semanas=Math.floor((new Date()-new Date(anoAtual+'-01-01'))/(7*24*3600*1000));
