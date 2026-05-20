@@ -244,6 +244,44 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .treino-stat{background:#fff;border-radius:12px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
 .treino-stat-val{font-size:20px;font-weight:700;color:#1a1a1a;}
 .treino-stat-lbl{font-size:11px;color:#aaa;margin-top:2px;}
+
+/* DIETA */
+.dieta-resumo{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.dieta-saldo-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.dieta-saldo-num{font-size:28px;font-weight:700;}
+.dieta-saldo-lbl{font-size:13px;color:#888;font-weight:500;}
+.dieta-bar-bg{height:10px;background:#f0f0ec;border-radius:99px;overflow:hidden;margin-bottom:8px;}
+.dieta-bar-fill{height:10px;border-radius:99px;background:#1D9E75;transition:width 0.5s;}
+.dieta-bar-fill.warn{background:#EF9F27;}
+.dieta-bar-fill.over{background:#D85A30;}
+.dieta-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;}
+.dieta-stat{background:#f9f9f7;border-radius:10px;padding:8px;text-align:center;}
+.dieta-stat-val{font-size:16px;font-weight:700;color:#1a1a1a;}
+.dieta-stat-lbl{font-size:10px;color:#888;margin-top:2px;}
+.refeicao-bloco{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.refeicao-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.refeicao-title{font-size:15px;font-weight:600;color:#1a1a1a;}
+.refeicao-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+.refeicao-status.feito{background:#e8f5ef;color:#0F6E56;}
+.refeicao-status.pendente{background:#f5f5f0;color:#aaa;}
+.opcao-card{border:1.5px solid #e0e0e0;border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;background:#fff;}
+.opcao-card:hover{border-color:#bbb;background:#f9f9f7;}
+.opcao-card.selecionada{border-color:#1D9E75;background:#e8f5ef;}
+.opcao-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.opcao-nome{font-size:14px;font-weight:600;color:#1a1a1a;}
+.opcao-kcal{font-size:12px;color:#1D9E75;font-weight:700;}
+.opcao-desc{font-size:12px;color:#666;line-height:1.4;}
+.refeicao-extra-row{display:flex;gap:6px;margin-top:8px;}
+.refeicao-extra-row input{flex:1;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;}
+.refeicao-extra-row input:focus{border-color:#1D9E75;}
+.extra-list{margin-top:6px;}
+.extra-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f9f9f7;border-radius:8px;margin-bottom:4px;font-size:13px;}
+.extra-item-info{flex:1;}
+.extra-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;}
+.extra-del:hover{color:#D85A30;}
+.dieta-meta-input{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.dieta-meta-input label{font-size:13px;font-weight:500;}
+.dieta-meta-input input{padding:8px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;width:90px;text-align:center;outline:none;}
 </style>
 </head>
 <body>
@@ -290,6 +328,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <button class="tab" onclick="showTab('timeline')">Histórico</button>
       <button class="tab" onclick="showTab('comparar')">Comparar</button>
       <button class="tab" onclick="showTab('treino')">Treino</button>
+      <button class="tab" onclick="showTab('dieta')">Dieta</button>
       <button class="tab" onclick="showTab('config')">Config</button>
     </div>
 
@@ -486,6 +525,53 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="card" style="margin-top:1rem;">
         <div class="section-title">Histórico de treinos</div>
         <div id="histTreinoList"><div class="empty">Nenhum treino registrado ainda.</div></div>
+      </div>
+    </div>
+
+
+    <!-- TAB DIETA -->
+    <div id="tab-dieta" style="display:none">
+      <!-- Resumo calórico do dia -->
+      <div class="dieta-resumo">
+        <div class="dieta-saldo-row">
+          <div>
+            <div class="dieta-saldo-num" id="dietaSaldo">0</div>
+            <div class="dieta-saldo-lbl">kcal disponíveis hoje</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:600;color:#1a1a1a;" id="dietaConsumido">0</div>
+            <div style="font-size:11px;color:#888;">de <span id="dietaMeta">2000</span> kcal</div>
+          </div>
+        </div>
+        <div class="dieta-bar-bg"><div class="dieta-bar-fill" id="dietaBar" style="width:0%"></div></div>
+        <div class="dieta-stats">
+          <div class="dieta-stat">
+            <div class="dieta-stat-val" id="dietaConsumido2">0</div>
+            <div class="dieta-stat-lbl">consumido</div>
+          </div>
+          <div class="dieta-stat">
+            <div class="dieta-stat-val" id="dietaQueimado">0</div>
+            <div class="dieta-stat-lbl">queimado (Strava)</div>
+          </div>
+          <div class="dieta-stat">
+            <div class="dieta-stat-val" id="dietaDeficit">0</div>
+            <div class="dieta-stat-lbl">déficit real</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refeições -->
+      <div id="refeicoesWrap"></div>
+
+      <!-- Meta calórica -->
+      <div class="card">
+        <div class="section-title">Configuração</div>
+        <div class="dieta-meta-input">
+          <label>Meta calórica diária:</label>
+          <input type="number" id="metaKcalInput" min="800" max="5000" step="50" onchange="salvarMetaKcal()">
+          <span style="font-size:13px;color:#888;">kcal</span>
+        </div>
+        <p style="font-size:12px;color:#aaa;">Pro seu objetivo de evento, recomendado entre 1.800 e 2.000 kcal/dia.</p>
       </div>
     </div>
 
@@ -1146,11 +1232,12 @@ function openModal(src){document.getElementById('modalImg').src=src;document.get
 function closeModal(){document.getElementById('modalBg').classList.remove('open');}
 
 function showTab(tab){
-  ['registrar','timeline','comparar','treino','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','treino','config'][i]===tab);});
+  ['registrar','timeline','comparar','treino','dieta','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','treino','dieta','config'][i]===tab);});
   if(tab==='timeline')renderTimeline();
   if(tab==='comparar')renderCompareSelects();
   if(tab==='treino')initTreino();
+  if(tab==='dieta')initDieta();
   if(tab==='config')carregarConfig();
 }
 
@@ -1463,6 +1550,211 @@ function buscarCargaAnterior(dataAtual, nomeEx){
     }
   }
   return null;
+}
+
+
+// DIETA
+const CARDAPIO = {
+  cafe: {
+    titulo: '☀️ Café da manhã',
+    horario: '7h-8h',
+    opcoes: [
+      {nome:'Ovos + pão integral + fruta', desc:'2 ovos mexidos, 1 fatia de pão integral, 1 fruta, café preto', kcal:380},
+      {nome:'Tapioca recheada', desc:'Tapioca pequena com queijo branco e ovo, café preto, 1 fruta', kcal:340},
+      {nome:'Iogurte com aveia', desc:'Iogurte natural sem açúcar, 1 col. aveia, 1 fruta, café preto', kcal:290},
+      {nome:'Omelete com tomate', desc:'Omelete de 2 ovos com tomate, 1 fatia pão integral, café preto', kcal:360},
+    ]
+  },
+  lanche_manha: {
+    titulo: '🕙 Lanche da manhã',
+    horario: '10h',
+    opcoes: [
+      {nome:'Fruta + castanhas', desc:'1 fruta + 10 castanhas', kcal:180},
+      {nome:'Iogurte natural', desc:'1 pote pequeno sem açúcar', kcal:100},
+      {nome:'Ovo cozido + fruta', desc:'1 ovo cozido + 1 fruta', kcal:160},
+    ]
+  },
+  almoco: {
+    titulo: '🍽️ Almoço',
+    horario: '12h-13h',
+    opcoes: [
+      {nome:'Frango + arroz/feijão + legumes', desc:'Filé de frango grelhado (palma da mão), arroz e feijão (concha pequena cada), legumes cozidos', kcal:550},
+      {nome:'Carne magra + arroz/feijão + legumes', desc:'Patinho ou alcatra grelhado, arroz e feijão (concha pequena cada), legumes cozidos', kcal:600},
+      {nome:'Peixe + arroz + legumes', desc:'Filé de peixe assado, arroz (concha pequena), legumes cozidos', kcal:480},
+      {nome:'Omelete grande + legumes', desc:'Omelete de 3 ovos com queijo branco, legumes cozidos', kcal:450},
+    ]
+  },
+  lanche_tarde: {
+    titulo: '🕓 Lanche da tarde',
+    horario: '15h-16h',
+    opcoes: [
+      {nome:'Fruta + castanhas', desc:'1 fruta + 10 castanhas', kcal:180},
+      {nome:'Iogurte natural', desc:'1 pote pequeno sem açúcar', kcal:100},
+      {nome:'Ovo cozido + fruta', desc:'1 ovo cozido + 1 fruta', kcal:160},
+      {nome:'Queijo branco + fruta', desc:'Fatia de queijo branco + 1 fruta', kcal:200},
+    ]
+  },
+  jantar: {
+    titulo: '🌙 Jantar',
+    horario: '19h-20h',
+    opcoes: [
+      {nome:'Sopa de legumes + ovo', desc:'Sopa de legumes batidos com 1 ovo cozido por cima', kcal:280},
+      {nome:'Omelete + queijo + pão', desc:'Omelete com queijo branco e tomate + 1 fatia pequena pão integral', kcal:380},
+      {nome:'Frango desfiado com legumes', desc:'Frango refogado com legumes (sem arroz)', kcal:340},
+      {nome:'Meia porção do almoço', desc:'Versão reduzida do almoço', kcal:320},
+    ]
+  }
+};
+
+let refeicoesHoje = [];
+
+async function initDieta(){
+  document.getElementById('metaKcalInput').value = perfil.meta_kcal || 2000;
+  await carregarRefeicoesHoje();
+  renderRefeicoes();
+  atualizarResumoDieta();
+}
+
+async function carregarRefeicoesHoje(){
+  const hoje = hojeLocal();
+  const{data}=await sb.from('refeicoes').select('*').eq('user_id',currentUser.id).eq('data',hoje).order('created_at');
+  refeicoesHoje = data || [];
+}
+
+async function salvarMetaKcal(){
+  const v = parseInt(document.getElementById('metaKcalInput').value) || 2000;
+  perfil.meta_kcal = v;
+  await sb.from('perfis').update({meta_kcal:v}).eq('id',currentUser.id);
+  atualizarResumoDieta();
+}
+
+function renderRefeicoes(){
+  const wrap = document.getElementById('refeicoesWrap');
+  const html = Object.entries(CARDAPIO).map(([tipo, ref]) => {
+    const consumida = refeicoesHoje.find(r => r.tipo === tipo);
+    const extras = refeicoesHoje.filter(r => r.tipo === tipo + '_extra');
+    const feito = !!consumida;
+
+    const opcoesHtml = ref.opcoes.map((op, idx) => {
+      const sel = consumida?.nome === op.nome;
+      return `<div class="opcao-card ${sel?'selecionada':''}" onclick="escolherOpcao('${tipo}', ${idx})">
+        <div class="opcao-header">
+          <span class="opcao-nome">${op.nome}</span>
+          <span class="opcao-kcal">${op.kcal} kcal</span>
+        </div>
+        <div class="opcao-desc">${op.desc}</div>
+      </div>`;
+    }).join('');
+
+    const extrasHtml = extras.length ? `<div class="extra-list">${extras.map(e => `
+      <div class="extra-item">
+        <div class="extra-item-info"><strong>${e.nome}</strong> · ${e.kcal} kcal</div>
+        <button class="extra-del" onclick="removerRefeicao('${e.id}')">✕</button>
+      </div>`).join('')}</div>` : '';
+
+    return `<div class="refeicao-bloco">
+      <div class="refeicao-header">
+        <div>
+          <div class="refeicao-title">${ref.titulo}</div>
+          <div style="font-size:11px;color:#aaa;">${ref.horario}</div>
+        </div>
+        <span class="refeicao-status ${feito?'feito':'pendente'}">${feito?'✓ feito':'pendente'}</span>
+      </div>
+      ${opcoesHtml}
+      ${extrasHtml}
+      <div class="refeicao-extra-row">
+        <input type="text" id="extra_nome_${tipo}" placeholder="Adicionar item extra (ex: 1 banana)">
+        <input type="number" id="extra_kcal_${tipo}" placeholder="kcal" style="max-width:80px;">
+        <button class="btn sm" onclick="adicionarExtra('${tipo}')" style="white-space:nowrap;">+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = html;
+}
+
+async function escolherOpcao(tipo, idx){
+  const opcao = CARDAPIO[tipo].opcoes[idx];
+  const hoje = hojeLocal();
+
+  // remove se já existe uma escolhida pra esse tipo
+  const existente = refeicoesHoje.find(r => r.tipo === tipo);
+  if(existente){
+    if(existente.nome === opcao.nome){
+      // desmarca se clicou na mesma
+      await sb.from('refeicoes').delete().eq('id', existente.id);
+      refeicoesHoje = refeicoesHoje.filter(r => r.id !== existente.id);
+    } else {
+      // troca pra outra opção
+      await sb.from('refeicoes').update({nome:opcao.nome, kcal:opcao.kcal}).eq('id', existente.id);
+      existente.nome = opcao.nome;
+      existente.kcal = opcao.kcal;
+    }
+  } else {
+    // cria novo
+    const{data}=await sb.from('refeicoes').insert({
+      user_id:currentUser.id, data:hoje, tipo, nome:opcao.nome, kcal:opcao.kcal
+    }).select().single();
+    if(data) refeicoesHoje.push(data);
+  }
+
+  renderRefeicoes();
+  atualizarResumoDieta();
+}
+
+async function adicionarExtra(tipo){
+  const nome = document.getElementById(`extra_nome_${tipo}`).value.trim();
+  const kcal = parseInt(document.getElementById(`extra_kcal_${tipo}`).value);
+  if(!nome || !kcal){ toast('Preencha nome e calorias'); return; }
+  const hoje = hojeLocal();
+  const{data}=await sb.from('refeicoes').insert({
+    user_id:currentUser.id, data:hoje, tipo:tipo+'_extra', nome, kcal
+  }).select().single();
+  if(data){
+    refeicoesHoje.push(data);
+    document.getElementById(`extra_nome_${tipo}`).value = '';
+    document.getElementById(`extra_kcal_${tipo}`).value = '';
+    renderRefeicoes();
+    atualizarResumoDieta();
+  }
+}
+
+async function removerRefeicao(id){
+  await sb.from('refeicoes').delete().eq('id', id);
+  refeicoesHoje = refeicoesHoje.filter(r => r.id !== id);
+  renderRefeicoes();
+  atualizarResumoDieta();
+}
+
+function atualizarResumoDieta(){
+  const meta = perfil.meta_kcal || 2000;
+  const consumido = refeicoesHoje.reduce((acc, r) => acc + (r.kcal || 0), 0);
+
+  // calorias queimadas hoje (do Strava no registro de hoje)
+  const hoje = hojeLocal();
+  const regHoje = registros.find(r => r.data === hoje);
+  let queimado = 0;
+  if(regHoje?.strava){
+    const match = regHoje.strava.match(/(\d+)\s*kcal/);
+    if(match) queimado = parseInt(match[1]);
+  }
+
+  const saldo = meta - consumido + queimado;
+  const deficit = consumido - meta - queimado;
+  const pctConsumido = Math.min(100, Math.round((consumido / meta) * 100));
+
+  document.getElementById('dietaSaldo').textContent = saldo;
+  document.getElementById('dietaSaldo').style.color = saldo >= 0 ? '#1D9E75' : '#D85A30';
+  document.getElementById('dietaConsumido').textContent = consumido;
+  document.getElementById('dietaConsumido2').textContent = consumido;
+  document.getElementById('dietaMeta').textContent = meta;
+  document.getElementById('dietaQueimado').textContent = queimado;
+  document.getElementById('dietaDeficit').textContent = (deficit > 0 ? '+' : '') + deficit;
+  document.getElementById('dietaDeficit').style.color = deficit <= 0 ? '#1D9E75' : '#D85A30';
+
+  const bar = document.getElementById('dietaBar');
+  bar.style.width = pctConsumido + '%';
+  bar.className = 'dieta-bar-fill' + (pctConsumido >= 100 ? ' over' : pctConsumido >= 80 ? ' warn' : '');
 }
 
 // STRAVA
