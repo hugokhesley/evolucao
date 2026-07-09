@@ -16,8 +16,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .header p{font-size:13px;color:#888;margin-top:2px;}
 .user-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;}
 .user-initials{width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#fff;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.tabs{display:flex;gap:4px;margin-bottom:1rem;background:#e8e8e2;padding:4px;border-radius:12px;}
-.tab{flex:1;padding:8px 4px;border:none;border-radius:9px;background:transparent;font-size:12px;cursor:pointer;color:#666;transition:all 0.15s;font-weight:500;}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;background:#e8e8e2;padding:4px;border-radius:12px;overflow-x:auto;}
+.tab{flex:1;padding:8px 4px;border:none;border-radius:9px;background:transparent;font-size:12px;cursor:pointer;color:#666;transition:all 0.15s;font-weight:500;white-space:nowrap;}
 .tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .card{background:#fff;border-radius:16px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
 .section-title{font-size:11px;font-weight:600;color:#999;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em;}
@@ -282,6 +282,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .dieta-meta-input{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .dieta-meta-input label{font-size:13px;font-weight:500;}
 .dieta-meta-input input{padding:8px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;width:90px;text-align:center;outline:none;}
+
+/* PEDAL — plano de 8 semanas */
+.pedal-fase-titulo{font-size:13px;font-weight:700;color:#1a1a1a;margin:16px 2px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pedal-fase-titulo .fase-tag{font-size:10px;font-weight:700;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em;}
+.pedal-semana{border:1.5px solid #eee;border-radius:14px;padding:10px 14px;margin-bottom:10px;background:#fff;}
+.pedal-semana.atual{border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,.08);}
+.pedal-semana.completa{background:#f6fbf8;border-color:#cde9dd;}
+.pedal-semana summary{list-style:none;cursor:pointer;}
+.pedal-semana summary::-webkit-details-marker{display:none;}
+.pedal-sem-head{display:flex;align-items:center;gap:10px;}
+.pedal-sem-num{font-size:15px;font-weight:700;}
+.pedal-sem-badge{margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:#f5f5f0;color:#888;}
+.pedal-sem-badge.atual{background:#e8f5ef;color:#0F6E56;}
+.pedal-nota{font-size:12px;color:#888;line-height:1.5;margin-bottom:6px;border-left:2px solid #1D9E75;padding-left:10px;}
+.pedal-ride-item{font-size:12px;color:#fc4c02;margin-top:6px;font-weight:500;}
 </style>
 </head>
 <body>
@@ -329,6 +344,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <button class="tab" onclick="showTab('comparar')">Comparar</button>
       <button class="tab" onclick="showTab('treino')">Treino</button>
       <button class="tab" onclick="showTab('dieta')">Dieta</button>
+      <button class="tab" onclick="showTab('pedal')">Pedal</button>
       <button class="tab" onclick="showTab('config')">Config</button>
     </div>
 
@@ -349,7 +365,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div class="streak-info">
             <div class="streak-num" id="streakExNum">0</div>
             <div class="streak-label">dias treino</div>
-            <div class="streak-sub" id="streakExSub" id="streakExSub">Treinou hoje?</div>
+            <div class="streak-sub" id="streakExSub">Treinou hoje?</div>
           </div>
         </div>
       </div>
@@ -575,6 +591,40 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       </div>
     </div>
 
+    <!-- TAB PEDAL -->
+    <div id="tab-pedal" style="display:none">
+      <div class="day-progress-card">
+        <div class="day-progress-header">
+          <span class="day-progress-title">🚴 Plano de pedal — 8 semanas</span>
+          <span class="day-progress-pct" id="pedalPct">0%</span>
+        </div>
+        <div class="day-progress-bar-bg"><div class="day-progress-bar-fill" id="pedalBar" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-top:4px;">
+          <span><strong id="pedalDoneN">0</strong>/<span id="pedalTotalN">0</span> pedais</span>
+          <span id="pedalSemAtual" style="font-weight:600;color:#0F6E56;">—</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Strava</div>
+        <div id="pedalStravaOff" style="display:none">
+          <p style="font-size:13px;color:#aaa;">Conecte o Strava na aba <strong>Hoje</strong> pra puxar seus pedais automaticamente.</p>
+        </div>
+        <div id="pedalStravaOn" style="display:none">
+          <p id="pedalStravaInfo" style="font-size:13px;color:#666;margin-bottom:10px;">Toque em atualizar pra ver seus pedais da semana.</p>
+          <button class="btn strava sm" onclick="syncPedalStrava()">Atualizar pedais</button>
+          <button class="btn sm green" id="pedalAutoBtn" style="display:none;margin-top:8px;" onclick="autoMarcarPedalStrava()">Marcar pedais na semana</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Cronograma</div>
+        <div id="pedalSemanas"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Regras de ouro</div>
+        <p style="font-size:13px;color:#666;line-height:1.7;">🌱 <strong>Comece devagar.</strong> Se dá pra conversar sem ofegar, o ritmo tá certo.<br>🛌 <strong>Descanso conta.</strong> O corpo fica forte na folga, não no pedal.<br>⚠️ <strong>Dor aguda = para.</strong> Cansaço bom é normal; dor no joelho/lombar não — ajuste o selim.<br>🏋️ <strong>Casa com a academia.</strong> Pedal nos dias de treino leve ou de folga.<br>💧 <strong>Hidrate e coma algo</strong> antes dos longos.</p>
+      </div>
+    </div>
+
     <!-- TAB CONFIG -->
     <div id="tab-config" style="display:none">
       <div class="card">
@@ -641,7 +691,7 @@ const CLIENT_ID='227221';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null;
-let perfil={altura:null,sexo:'M',idade:null,meta_peso:null,meta_abd:null,meta_gord:null,habitos:['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'],strava_token:null,strava_refresh_token:null,strava_token_expiry:0,strava_client_secret:null};
+let perfil={altura:null,sexo:'M',idade:null,meta_peso:null,meta_abd:null,meta_gord:null,habitos:['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'],strava_token:null,strava_refresh_token:null,strava_token_expiry:0,strava_client_secret:null,plano_pedal:{}};
 let registros=[];
 let ultimaAtividade=null;
 let editandoData=null;
@@ -717,6 +767,7 @@ async function carregarPerfil(){
   if(data){
     perfil={...perfil,...data};
     if(!perfil.habitos||!perfil.habitos.length) perfil.habitos=['Losartana 50mg','Rosuvastatina 40mg','Ômega 3','Magnésio','ZERO ÁLCOOL'];
+    if(!perfil.plano_pedal) perfil.plano_pedal={};
   } else {
     // cria perfil inicial
     await sb.from('perfis').insert({id:currentUser.id,habitos:perfil.habitos});
@@ -1232,12 +1283,13 @@ function openModal(src){document.getElementById('modalImg').src=src;document.get
 function closeModal(){document.getElementById('modalBg').classList.remove('open');}
 
 function showTab(tab){
-  ['registrar','timeline','comparar','treino','dieta','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','treino','dieta','config'][i]===tab);});
+  ['registrar','timeline','comparar','treino','dieta','pedal','config'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['registrar','timeline','comparar','treino','dieta','pedal','config'][i]===tab);});
   if(tab==='timeline')renderTimeline();
   if(tab==='comparar')renderCompareSelects();
   if(tab==='treino')initTreino();
   if(tab==='dieta')initDieta();
+  if(tab==='pedal')initPedal();
   if(tab==='config')carregarConfig();
 }
 
@@ -1858,6 +1910,131 @@ function agendarSemanal(){const agora=new Date(),diasParaDomingo=(7-agora.getDay
 function hojeLocal(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ===================== PLANO DE PEDAL (8 semanas) ===================== */
+const PEDAL_FASES=[
+  {nome:'Adaptação',sub:'O corpo reaprende'},
+  {nome:'Base',sub:'Ganha ritmo'},
+  {nome:'Volume',sub:'Aumenta a distância'},
+  {nome:'Consolidação',sub:'Já é rotina'},
+];
+const PEDAL_SEMANAS=[
+  {n:1,fase:0,freq:'3x / semana',nota:'O corpo reaprende o movimento. Gire a perna solto, ritmo leve — dá pra conversar sem ofegar.',sessoes:['Pedal leve · 20–25 min','Pedal leve · 25 min','Pedal leve · 25–30 min']},
+  {n:2,fase:0,freq:'3x / semana',nota:'Mesma pegada, um tiquinho mais longo. Lombar ou punho reclamando? É ajuste de selim.',sessoes:['Pedal leve · 25 min','Pedal leve · 30 min','Pedal leve · 30 min']},
+  {n:3,fase:1,freq:'3–4x / semana',nota:'Entra o primeiro longo no fim de semana. Continua tranquilo, só mais tempo em cima da bike.',sessoes:['Tranquilo · 30 min','Tranquilo · 35 min','Tranquilo · 30 min','Longo do fim de semana · 45 min']},
+  {n:4,fase:1,freq:'4x / semana',nota:'Já deve estar mais fácil que a semana 1. A rotina virando hábito.',sessoes:['Tranquilo · 35 min','Tranquilo · 40 min','Tranquilo · 35 min','Longo · 50 min']},
+  {n:5,fase:2,freq:'4x / semana',nota:'O longo passa de tempo pra quilômetro. Começa a olhar o mapa.',sessoes:['Constante · 40 min','Constante · 45 min','Constante · 40 min','Longo · 1h / ~15 km']},
+  {n:6,fase:2,freq:'4x / semana',nota:'Já é ciclista de rotina. Experimenta um trecho de terra leve no longo — a Versa aguenta.',sessoes:['Constante · 45 min','Constante · 50 min','Constante · 45 min','Longo · 1h / ~18 km']},
+  {n:7,fase:3,freq:'4–5x / semana',nota:'Brinca de ritmo: um dia forte, os outros soltos pra recuperar.',sessoes:['Ritmo forte · 40 min','Solto · 45 min','Solto · 40 min','Longo · ~22 km']},
+  {n:8,fase:3,freq:'4–5x / semana',nota:'Fecha com chave de ouro. O longo final é a prova de que a virada pegou.',sessoes:['Ritmo forte · 45 min','Solto · 45 min','Solto · 40 min','Solto · 40 min','Longo · ~25 km']},
+];
+const PEDAL_TOTAL=PEDAL_SEMANAS.reduce((s,w)=>s+w.sessoes.length,0);
+let pedalRidesStrava=[];
+const pedalKey=(s,i)=>`${s}-${i}`;
+const pedalIsOn=(s,i)=>!!(perfil.plano_pedal&&perfil.plano_pedal[pedalKey(s,i)]);
+const pedalSemDone=s=>PEDAL_SEMANAS[s].sessoes.filter((_,i)=>pedalIsOn(s,i)).length;
+const pedalSemCompleta=s=>pedalSemDone(s)===PEDAL_SEMANAS[s].sessoes.length;
+const pedalTotalDone=()=>PEDAL_SEMANAS.reduce((a,w,s)=>a+pedalSemDone(s),0);
+function pedalSemanaAtual(){for(let s=0;s<PEDAL_SEMANAS.length;s++)if(!pedalSemCompleta(s))return s;return -1;}
+
+async function savePedal(){
+  showSaving(true);
+  await sb.from('perfis').update({plano_pedal:perfil.plano_pedal}).eq('id',currentUser.id);
+  showSaving(false);
+}
+
+function initPedal(){
+  if(!perfil.plano_pedal)perfil.plano_pedal={};
+  renderPedal();
+  const on=!!perfil.strava_token;
+  document.getElementById('pedalStravaOff').style.display=on?'none':'block';
+  document.getElementById('pedalStravaOn').style.display=on?'block':'none';
+}
+
+function renderPedal(){
+  const done=pedalTotalDone(),pct=Math.round(done/PEDAL_TOTAL*100),atual=pedalSemanaAtual();
+  document.getElementById('pedalPct').textContent=pct+'%';
+  document.getElementById('pedalDoneN').textContent=done;
+  document.getElementById('pedalTotalN').textContent=PEDAL_TOTAL;
+  document.getElementById('pedalBar').style.width=pct+'%';
+  document.getElementById('pedalSemAtual').textContent=atual>=0?`Semana ${atual+1} — ${PEDAL_FASES[PEDAL_SEMANAS[atual].fase].nome}`:'Plano concluído! 🏆';
+  const wrap=document.getElementById('pedalSemanas');
+  let ultimaFase=-1,html='';
+  PEDAL_SEMANAS.forEach((w,s)=>{
+    if(w.fase!==ultimaFase){ultimaFase=w.fase;const f=PEDAL_FASES[w.fase];html+=`<div class="pedal-fase-titulo"><span class="fase-tag">Fase ${w.fase+1}</span>${f.nome} · <span style="color:#aaa;font-weight:400;">${f.sub}</span></div>`;}
+    const d=pedalSemDone(s),total=w.sessoes.length,completa=d===total,ehAtual=s===atual;
+    html+=`<details class="pedal-semana ${completa?'completa':''} ${ehAtual?'atual':''}" ${ehAtual?'open':''} id="pedalSem_${s}">
+      <summary class="pedal-sem-head">
+        <span class="pedal-sem-num">Semana ${w.n}</span>
+        <span style="font-size:12px;color:#888;">${w.freq}</span>
+        <span class="pedal-sem-badge ${ehAtual?'atual':''}" id="pedalBadge_${s}">${completa?'✓ concluída':d+'/'+total}</span>
+      </summary>
+      <div style="padding-top:8px;">
+        <div class="pedal-nota">${w.nota}</div>
+        ${w.sessoes.map((sess,i)=>{const on=pedalIsOn(s,i);const p=sess.split(' · ');return `<div class="check-item ${on?'checked':''}" onclick="togglePedal(${s},${i})"><input type="checkbox" ${on?'checked':''} onclick="event.stopPropagation();togglePedal(${s},${i})"><label><strong>${p[0]}</strong>${p[1]?' · '+p[1]:''}</label></div>`;}).join('')}
+      </div>
+    </details>`;
+  });
+  wrap.innerHTML=html;
+}
+
+async function togglePedal(s,i){
+  if(!perfil.plano_pedal)perfil.plano_pedal={};
+  const k=pedalKey(s,i);
+  if(perfil.plano_pedal[k])delete perfil.plano_pedal[k];
+  else perfil.plano_pedal[k]={feito:true,data:hojeLocal()};
+  refreshPedalSemana(s);refreshPedalSummary();
+  await savePedal();
+}
+
+function refreshPedalSemana(s){
+  const det=document.getElementById('pedalSem_'+s);if(!det)return;
+  const items=det.querySelectorAll('.check-item');
+  PEDAL_SEMANAS[s].sessoes.forEach((_,i)=>{const on=pedalIsOn(s,i);const it=items[i];if(!it)return;it.classList.toggle('checked',on);const cb=it.querySelector('input');if(cb)cb.checked=on;});
+  const d=pedalSemDone(s),total=PEDAL_SEMANAS[s].sessoes.length,completa=d===total;
+  const badge=document.getElementById('pedalBadge_'+s);if(badge)badge.textContent=completa?'✓ concluída':d+'/'+total;
+  det.classList.toggle('completa',completa);
+}
+
+function refreshPedalSummary(){
+  const done=pedalTotalDone(),pct=Math.round(done/PEDAL_TOTAL*100),atual=pedalSemanaAtual();
+  document.getElementById('pedalPct').textContent=pct+'%';
+  document.getElementById('pedalDoneN').textContent=done;
+  document.getElementById('pedalBar').style.width=pct+'%';
+  document.getElementById('pedalSemAtual').textContent=atual>=0?`Semana ${atual+1} — ${PEDAL_FASES[PEDAL_SEMANAS[atual].fase].nome}`:'Plano concluído! 🏆';
+  PEDAL_SEMANAS.forEach((_,s)=>{const det=document.getElementById('pedalSem_'+s);if(det){det.classList.toggle('atual',s===atual);const b=document.getElementById('pedalBadge_'+s);if(b)b.classList.toggle('atual',s===atual&&!pedalSemCompleta(s));}});
+}
+
+async function syncPedalStrava(){
+  if(!perfil.strava_token){toast('Conecte o Strava na aba Hoje primeiro',3500);return;}
+  const info=document.getElementById('pedalStravaInfo');info.textContent='Buscando seus pedais...';
+  const ok=await refreshStravaToken();
+  if(!ok){info.textContent='Token expirado — reconecte o Strava na aba Hoje.';return;}
+  try{
+    const after=Math.floor((Date.now()-7*864e5)/1000);
+    const r=await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${after}&per_page=30`,{headers:{Authorization:'Bearer '+perfil.strava_token}});
+    const acts=await r.json();
+    const rides=Array.isArray(acts)?acts.filter(a=>a.type==='Ride'||a.type==='VirtualRide'||(a.sport_type||'').includes('Ride')):[];
+    pedalRidesStrava=rides;
+    if(!rides.length){info.innerHTML='Nenhum pedal no Strava nos últimos 7 dias.';document.getElementById('pedalAutoBtn').style.display='none';return;}
+    const distTot=(rides.reduce((s,a)=>s+(a.distance||0),0)/1000).toFixed(1);
+    const lista=rides.map(a=>`<div class="pedal-ride-item">🚴 ${a.name} · ${(a.distance/1000).toFixed(1)}km · ${Math.round((a.moving_time||0)/60)}min</div>`).join('');
+    info.innerHTML=`<strong>${rides.length} pedais</strong> · ${distTot} km nos últimos 7 dias${lista}`;
+    const btn=document.getElementById('pedalAutoBtn');btn.style.display='block';btn.textContent=`Marcar ${rides.length} pedais na semana atual`;
+  }catch(e){info.textContent='Erro ao buscar no Strava.';}
+}
+
+async function autoMarcarPedalStrava(){
+  const atual=pedalSemanaAtual();
+  if(atual<0){toast('Plano concluído! 🏆');return;}
+  const n=pedalRidesStrava.length;if(!n){toast('Nenhum pedal do Strava pra marcar');return;}
+  if(!confirm(`Marcar ${n} pedais da Semana ${atual+1} como feitos?`))return;
+  let m=0;
+  PEDAL_SEMANAS[atual].sessoes.forEach((_,i)=>{if(m<n&&!pedalIsOn(atual,i)){perfil.plano_pedal[pedalKey(atual,i)]={feito:true,data:hojeLocal(),strava:true};m++;}});
+  refreshPedalSemana(atual);refreshPedalSummary();
+  await savePedal();
+  toast(`${m} pedais marcados! 🚴`);
 }
 
 // INIT
